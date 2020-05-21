@@ -1,29 +1,71 @@
-Window w1, w2, w3, w4;
+class Compositor__ {
+  public PGraphics graphics;  
+  ArrayList<WindowObject> windows = new ArrayList<WindowObject>();
+  WindowObject w;
+  
+  Compositor__(int width, int height) {
+    graphics = createGraphics(width, height, P3D);
+  }
+    
+  void add(Window window, int width, int height) {
+    w = new WindowObject(width, height);
+    windows.add(w);
+    w.attach(window);
+  }
+  
+  void setLocation(int x, int y) {
+    w.x = x;
+    w.y = y;
+  }
 
-void setup() {
-  size(400, 400, P3D);
-  w1 = new Window(200, 200);
-  w2 = new Window(200, 200);
-  w3 = new Window(200, 200);
-  w4 = new Window(200, 200);
-  w1.attach(new Cube());
-  w2.attach(new Cube());
-  w3.attach(new Cube());
-  w4.attach(new Cube());
-  w1.setup();
-  w2.setup();
-  w3.setup();
-  w4.setup();
-}
-
-void draw() {
-  background(0);
-  w1.draw();
-  w2.draw();
-  w3.draw();
-  w4.draw();
-  image(w1.graphics, 0, 0);
-  image(w2.graphics, 200, 0);
-  image(w3.graphics, 0, 200);
-  image(w4.graphics, 200, 200);
+  void setup() {
+    graphics.beginDraw();
+    for (WindowObject window: windows) {
+      window.setup();
+      graphics.image(window.graphics, window.x, window.y); //<>//
+    }
+    graphics.endDraw();
+    image(graphics, 0, 0);
+  }
+  
+  void draw() {
+    graphics.beginDraw();
+    graphics.background(0);
+    for (WindowObject window: windows) {
+      window.draw();
+      graphics.image(window.graphics, window.x, window.y);
+    }
+    graphics.endDraw();
+    image(graphics, 0, 0);
+  }
+  
+  void mousePressed() {
+    graphics.beginDraw();
+    for (WindowObject window: windows) {
+      window.mousePressed();
+      graphics.image(window.graphics, window.x, window.y);
+    }
+    graphics.endDraw();
+    image(graphics, 0, 0);
+  }
+  
+  void mouseDragged() {
+    graphics.beginDraw();
+    for (WindowObject window: windows) {
+      window.mouseDragged();
+      graphics.image(window.graphics, window.x, window.y);
+    }
+    graphics.endDraw();
+    image(graphics, 0, 0);
+  }
+  
+  void mouseReleased() {
+    graphics.beginDraw();
+    for (WindowObject window: windows) {
+      window.mouseReleased();
+      graphics.image(window.graphics, window.x, window.y);
+    }
+    graphics.endDraw();
+    image(graphics, 0, 0);
+  }
 }
