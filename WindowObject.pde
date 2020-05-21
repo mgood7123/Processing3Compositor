@@ -6,6 +6,11 @@ class WindowObject {
   int width;
   int x;
   int y;
+  int borderWidth = 20;
+  
+  // with a window size of 20 on each side
+  // to the application it is 0,0 to 200,200
+  // to the window manager it is 0,0 to 240,240
   
   boolean draggable = true;
   
