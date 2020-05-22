@@ -3,6 +3,8 @@ class Window {
   
   int height;
   int width;
+  int startX, startY, endX, endY;
+  int mouseX, mouseY;
   Window() {} // implicit super constructor required
   void setup() {}
   void draw() {}

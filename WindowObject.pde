@@ -6,12 +6,20 @@ class WindowObject {
   int width;
   int x;
   int y;
-  int borderWidth = 20;
+
+  int borderTop = 16;
+  int borderLeft = 3;
+  int borderBottom = 3;
+  int borderRight = 3;
   
   // with a window size of 20 on each side
   // to the application it is 0,0 to 200,200
   // to the window manager it is 0,0 to 240,240
   
+  // i would draw a rectangle of 0,0 x 240,240
+  // then render my view at 20,20 x 220,220
+  // then add buttons to the top of my rectangle
+    
   boolean draggable = true;
   
   WindowObject() {} // implicit super constructor required
@@ -19,36 +27,87 @@ class WindowObject {
   WindowObject(int width, int height) {
     this.width = width;
     this.height = height;
+    graphics = createGraphics(width, height, P3D);
   }
   
   void attach(Window window) {
     this.window = window;
-    this.window.height = height;
-    this.window.width = width;
+    this.window.startX = borderLeft+1;
+    this.window.startY = borderTop+1;
+    this.window.endX = height-borderTop-borderBottom-2;
+    this.window.endY = width-borderLeft-borderRight-2;
+    this.window.height = this.window.endX;
+    this.window.width = this.window.endY;
   }
   
+  void correctMouseLocation() {
+    window.mouseX = mouseX-window.startX-1;
+    window.mouseY = mouseY-window.startY-2;
+    println("window.mouseX = " + window.mouseX);
+    println("window.mouseY = " + window.mouseY);
+  }
+
+  void clearScreen() {
+    graphics.beginDraw();
+    graphics.background(0);
+    graphics.endDraw();
+  }
+    
+  
+  void drawBorders() {
+    graphics.beginDraw();
+    graphics.rectMode(CORNER);
+    graphics.stroke(0);
+    graphics.fill(157);
+    graphics.rect(0, 0, width, height, 10);
+    graphics.endDraw();
+  }
+  
+  void drawGraphics() {
+    graphics.beginDraw();
+    graphics.image(
+      window.graphics,
+      window.startX,
+      window.startY,
+      window.endY,
+      window.endX
+    );
+    graphics.endDraw();
+  }
+  
+  void drawWindow() {
+    clearScreen();
+    drawBorders();
+    drawGraphics();
+  }
+
   void setup() {
+    correctMouseLocation();
     window.setup();
-    graphics = window.graphics;
+    drawWindow();
   }
   
   void draw() {
+    correctMouseLocation();
     window.draw();
-    graphics = window.graphics;
+    drawWindow();
   }
   
   void mousePressed() {
+    correctMouseLocation();
     window.mousePressed();
-    graphics = window.graphics;
+    drawWindow();
   }
   
   void mouseDragged() {
+    correctMouseLocation();
     window.mouseDragged();
-    graphics = window.graphics;
+    drawWindow();
   }
   
   void mouseReleased() {
+    correctMouseLocation();
     window.mouseReleased();
-    graphics = window.graphics;
+    drawWindow();
   }
 }

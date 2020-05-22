@@ -1,7 +1,8 @@
-class DraggableExample extends Window {
+class DraggableExample extends Window { //<>//
   float bx;
   float by;
-  int boxSize = 75;
+  int boxSizeX = 20;
+  int boxSizeY = 20;
   boolean overBox = false;
   boolean locked = false;
   float xOffset = 0.0;
@@ -23,8 +24,8 @@ class DraggableExample extends Window {
     graphics.background(0);
     
     // Test if the cursor is over the box 
-    if (mouseX > bx-boxSize && mouseX < bx+boxSize && 
-        mouseY > by-boxSize && mouseY < by+boxSize) {
+    if (mouseX > bx-boxSizeX && mouseX < bx+boxSizeX && 
+        mouseY > by-boxSizeY && mouseY < by+boxSizeY) {
       overBox = true;
       if(!locked) { 
         graphics.stroke(255); 
@@ -37,7 +38,7 @@ class DraggableExample extends Window {
     }
     
     // Draw the box
-    graphics.rect(bx, by, boxSize, boxSize);
+    graphics.rect(bx, by, boxSizeX, boxSizeY);
     graphics.endDraw();
   }
   
