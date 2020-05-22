@@ -6,6 +6,7 @@ void settings() {
 
 void setup() {
   compositor = new Compositor__(400, 400);
+  // what, width, height
   compositor.add(new DraggableExample(), 200, 200);
   compositor.setLocation(0 ,0);
   compositor.add(new Cube(), 200, 200);
