@@ -41,10 +41,13 @@ class WindowObject {
   }
   
   void correctMouseLocation() {
+    // is -1 and -2 correct for MacOS mouse pointer?
     window.mouseX = mouseX-window.startX-1;
     window.mouseY = mouseY-window.startY-2;
-    println("window.mouseX = " + window.mouseX);
-    println("window.mouseY = " + window.mouseY);
+    println("mouseX        = " + mouseX +        ", mouseY        = " + mouseY);
+    println("borderLeft    = " + borderLeft +    ", borderTop     = " + borderTop);
+    println("window.mouseX = " + window.mouseX + ", window.mouseY = " + window.mouseY);
+    println("window.startX = " + window.startX + ", window.startY = " + window.startY);
   }
 
   void clearScreen() {
