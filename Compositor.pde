@@ -1,9 +1,11 @@
-class Compositor__ {
+// TODO: rename to Window manager and split to WindowManager and Compositor
+
+class Compositor {
   public PGraphics graphics;  
   ArrayList<WindowObject> windows = new ArrayList<WindowObject>();
   WindowObject w;
   
-  Compositor__(int width, int height) {
+  Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
   }
     

@@ -1,11 +1,11 @@
-Compositor__ compositor;
+Compositor compositor;
 
 void settings() {
     size(400, 400, P3D);
 }
 
 void setup() {
-  compositor = new Compositor__(400, 400);
+  compositor = new Compositor(400, 400);
   // what, width, height
   compositor.add(new DraggableExample(), 200, 200);
   compositor.setLocation(0 ,0);
