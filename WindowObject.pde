@@ -10,6 +10,7 @@ class WindowObject {
   boolean locked = false;
   
   boolean focus = false;
+  boolean focusable = false;
 
   boolean clickedOnBorder = false;
   boolean clickedOnApp = false;
@@ -127,7 +128,7 @@ class WindowObject {
   }
   
   void canFocus() {
-    focus = mouseIsInWindow();
+    focusable = mouseIsInWindow();
   }
   
   void mousePressed() {
