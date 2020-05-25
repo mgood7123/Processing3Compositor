@@ -7,8 +7,12 @@ class WindowObject {
   int x;
   int y;
   
-  boolean overBox = false;
   boolean locked = false;
+  
+  boolean focus = false;
+  boolean focusIsBorder = false;
+  boolean focusIsApp = false;
+  
   int xOffset = 0;
   int yOffset = 0;
 
@@ -100,12 +104,21 @@ class WindowObject {
 
   void drawWindow() {
     clearScreen();
-    if (mouseIsInBorder()) {
-      overBox = true;
+    if (mouseIsInWindow()) {
+      focus = true;
+      if (!mouseIsInApp()) {
+        focusIsBorder = true;
+        focusIsApp = false;
+      } else {
+        focusIsBorder = false;
+        focusIsApp = true;
+      }
       if(locked) drawBordersLocked();
       else drawBordersHighlighted();
     } else {
-      overBox = false;
+      focus = false;
+      focusIsBorder = false;
+      focusIsApp = false;
       drawBorders();
     }
     drawGraphics();
@@ -124,29 +137,41 @@ class WindowObject {
   }
   
   void mousePressed() {
-    if(overBox) locked = true;
-    else locked = false;
-    xOffset = mouseX-x;
-    yOffset = mouseY-y; 
-    correctMouseLocation();
-    window.mousePressed();
-    drawWindow();
+    if (focus) {
+      if (focusIsBorder) {
+          locked = true;
+          xOffset = mouseX-x;
+          yOffset = mouseY-y;
+      } else {
+        locked = false;
+        if (focusIsApp) {
+          correctMouseLocation();
+          window.mousePressed();
+        }
+      }
+    }
+      drawWindow();
   }
   
   void mouseDragged() {
     if(locked) {
       x = mouseX-xOffset; 
       y = mouseY-yOffset; 
+    } else {
+      if (focusIsApp) {
+        correctMouseLocation();
+        window.mouseDragged();
+      }
     }
-    correctMouseLocation();
-    window.mouseDragged();
     drawWindow();
   }
   
   void mouseReleased() {
-    locked = false;
-    correctMouseLocation();
-    window.mouseReleased();
+    if (locked) locked = false;
+    if (focusIsApp) {
+      correctMouseLocation();
+      window.mouseReleased();
+    }
     drawWindow();
   }
 }

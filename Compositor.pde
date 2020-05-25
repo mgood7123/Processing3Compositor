@@ -1,4 +1,21 @@
 // TODO: rename to Window manager and split to WindowManager and Compositor
+// for now, assume that the compositor draws what the window manager renders
+// however this may be incorrect, so avoid doing this for the time being
+// untill more information is available on the difference between a
+// compositor and a window manager
+
+// from https://github.com/mgood7123/AndroidCompositor/blob/5232f327e22df10368c780287822bc2320b22f06/app/src/main/jni/compositor.cpp#L17
+// my current understanding of all this is that a compositor will render each
+// application's frame buffer, and a window manager such as KDE or GNOME or I3,
+// will work WITH the compositor retrieving information about windows and their
+// position, then draw boarders around those windows and implement either stacking
+// or tiling like functionality depending on the windowing system type and assumably
+// send information back to the compositor such as updates on window changes.
+
+// for example if the window is minimized or its position changes, the compositor
+// will then redraw itself as it sees fit according to the received information
+
+// end from https://github.com/mgood7123/AndroidCompositor/blob/5232f327e22df10368c780287822bc2320b22f06/app/src/main/jni/compositor.cpp#L17
 
 class Compositor {
   public PGraphics graphics;  
@@ -8,7 +25,7 @@ class Compositor {
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
   }
-    
+  
   void add(Window window, int width, int height) {
     w = new WindowObject(width, height);
     windows.add(w);
