@@ -10,8 +10,9 @@ class WindowObject {
   boolean locked = false;
   
   boolean focus = false;
-  boolean focusIsBorder = false;
-  boolean focusIsApp = false;
+
+  boolean clickedOnBorder = false;
+  boolean clickedOnApp = false;
   
   int xOffset = 0;
   int yOffset = 0;
@@ -104,21 +105,10 @@ class WindowObject {
 
   void drawWindow() {
     clearScreen();
-    if (mouseIsInWindow()) {
-      focus = true;
-      if (!mouseIsInApp()) {
-        focusIsBorder = true;
-        focusIsApp = false;
-      } else {
-        focusIsBorder = false;
-        focusIsApp = true;
-      }
-      if(locked) drawBordersLocked();
+    if (focus) {
+      if (clickedOnBorder && locked) drawBordersLocked();
       else drawBordersHighlighted();
     } else {
-      focus = false;
-      focusIsBorder = false;
-      focusIsApp = false;
       drawBorders();
     }
     drawGraphics();
@@ -137,28 +127,28 @@ class WindowObject {
   }
   
   void mousePressed() {
-    if (focus) {
-      if (focusIsBorder) {
-          locked = true;
-          xOffset = mouseX-x;
-          yOffset = mouseY-y;
+    if (mouseIsInWindow()) {
+      focus = true;
+      if (mouseIsInBorder()) {
+        clickedOnBorder = true;
+        locked = true;
+        xOffset = mouseX-x;
+        yOffset = mouseY-y;
       } else {
-        locked = false;
-        if (focusIsApp) {
-          correctMouseLocation();
-          window.mousePressed();
-        }
+        clickedOnApp = true;
+        correctMouseLocation();
+        window.mousePressed();
       }
-    }
-      drawWindow();
+    } else focus = false;
+    drawWindow();
   }
   
   void mouseDragged() {
-    if(locked) {
+    if(clickedOnBorder && locked) {
       x = mouseX-xOffset; 
       y = mouseY-yOffset; 
     } else {
-      if (focusIsApp) {
+      if (clickedOnApp) {
         correctMouseLocation();
         window.mouseDragged();
       }
@@ -167,8 +157,11 @@ class WindowObject {
   }
   
   void mouseReleased() {
-    if (locked) locked = false;
-    if (focusIsApp) {
+    if (clickedOnBorder) {
+      clickedOnBorder = false;
+      locked = false;
+    } else if (clickedOnApp) {
+      clickedOnApp = false;
       correctMouseLocation();
       window.mouseReleased();
     }

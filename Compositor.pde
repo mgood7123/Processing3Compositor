@@ -41,7 +41,7 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
-      graphics.image(window.graphics, window.x, window.y); //<>//
+      graphics.image(window.graphics, window.x, window.y); //<>// //<>//
     }
     graphics.endDraw();
     image(graphics, 0, 0);
