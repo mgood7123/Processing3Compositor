@@ -25,9 +25,6 @@ class Compositor {
   WindowObject w;
   int windowFocus = -1;
   int lastWindowFocus = -1;
-  boolean wantsToReorder = false;
-  boolean canReorder = false;
-  boolean reorderComplete = false;
   
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
