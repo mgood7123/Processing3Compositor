@@ -126,20 +126,21 @@ class WindowObject {
     drawWindow();
   }
   
+  void canFocus() {
+    focus = mouseIsInWindow();
+  }
+  
   void mousePressed() {
-    if (mouseIsInWindow()) {
-      focus = true;
-      if (mouseIsInBorder()) {
-        clickedOnBorder = true;
-        locked = true;
-        xOffset = mouseX-x;
-        yOffset = mouseY-y;
-      } else {
-        clickedOnApp = true;
-        correctMouseLocation();
-        window.mousePressed();
-      }
-    } else focus = false;
+    if (mouseIsInBorder()) {
+      clickedOnBorder = true;
+      locked = true;
+      xOffset = mouseX-x;
+      yOffset = mouseY-y;
+    } else {
+      clickedOnApp = true;
+      correctMouseLocation();
+      window.mousePressed();
+    }
     drawWindow();
   }
   

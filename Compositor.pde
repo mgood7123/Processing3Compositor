@@ -18,9 +18,13 @@
 // end from https://github.com/mgood7123/AndroidCompositor/blob/5232f327e22df10368c780287822bc2320b22f06/app/src/main/jni/compositor.cpp#L17
 
 class Compositor {
-  public PGraphics graphics;  
+  public PGraphics graphics;
   ArrayList<WindowObject> windows = new ArrayList<WindowObject>();
   WindowObject w;
+  int windowFocus = -1;
+  boolean wantsToReorder = false;
+  boolean canReorder = false;
+  boolean reorderComplete = false;
   
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
@@ -36,12 +40,31 @@ class Compositor {
     w.x = x;
     w.y = y;
   }
+  
+  void reorder_array() {
+    // re order the array based on last item clicked
+    WindowObject target = null;
+    boolean found = false;
+    for (WindowObject window: windows) {
+      if (window.focus) {
+        found = true;
+        target = window;
+        windowFocus = windows.indexOf(target);
+        break;
+      }
+    }
+    if (found) {
+      windows.remove(windowFocus);
+      windows.add(target);
+      windowFocus = windows.size()-1;
+    } else windowFocus = -1;
+  }
 
   void setup() {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
-      graphics.image(window.graphics, window.x, window.y); //<>// //<>//
+      graphics.image(window.graphics, window.x, window.y); //<>//
     }
     graphics.endDraw();
     image(graphics, 0, 0);
@@ -59,13 +82,16 @@ class Compositor {
   }
   
   void mousePressed() {
-    graphics.beginDraw();
-    for (WindowObject window: windows) {
-      window.mousePressed();
-      graphics.image(window.graphics, window.x, window.y);
+    for (WindowObject window: windows) window.canFocus();
+    reorder_array();
+    if (windowFocus != -1) {
+      graphics.beginDraw();
+      WindowObject win = windows.get(windowFocus);
+      win.mousePressed();
+      graphics.image(win.graphics, win.x, win.y);
+      graphics.endDraw();
+      image(graphics, 0, 0);
     }
-    graphics.endDraw();
-    image(graphics, 0, 0);
   }
   
   void mouseDragged() {
