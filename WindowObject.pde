@@ -191,11 +191,11 @@ class WindowObject {
       int previewWidth_ = 0;
       int previewHeight_ = 0;
       if (resizeTopLeft) {
+        // subtract
         previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
         previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
         if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
         if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
-        // subtract
       } else if (resizeBottomRight) {
         // add
         previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
