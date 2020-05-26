@@ -191,9 +191,9 @@ class WindowObject {
         // the bottom right must stay in its same position while we move the window
         
         window.endX = windowEndXOffset-window.startX;
-        window.width = window.endX;
+        window.width = window.startX-window.endX;
         window.endY = windowEndYOffset-window.startY;
-        window.height = window.endY;
+        window.height = window.startY-window.endY;
       } else if (resizeBottomRight) {
         width = mouseX-widthOffset;
         height = mouseY-heightOffset;
