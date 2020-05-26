@@ -2,6 +2,8 @@ class WindowObject {
   public PGraphics graphics;
   Window window;
   
+  boolean displayFPS = false;
+  
   int height;
   int minimumHeight = 65;
   int minimumWidth = 65;
@@ -68,6 +70,24 @@ class WindowObject {
     window.mouseY = (mouseY-y-window.y-2);
   }
 
+  boolean mouseIsInWindow() {
+    return mouseX >= x && mouseX < width+x &&
+      mouseY >= y && mouseY < height+y;
+  }
+  
+  boolean mouseIsInApp() {
+    return mouseX >= x+window.x && mouseX < x+window.x+window.width &&
+      mouseY >= y+window.y && mouseY < y+window.y+window.height;
+  }
+  
+  boolean mouseIsInBorder() {
+    return mouseIsInWindow() && !mouseIsInApp();
+  }
+
+  boolean mouseIsInResizeBorder() {
+    return resizable && (mouseIsInWindow() && !mouseIsInApp());
+  }
+
   void clearScreen() {
     graphics.beginDraw();
     graphics.background(0);
@@ -104,27 +124,13 @@ class WindowObject {
       window.width,
       window.height
     );
+    if (displayFPS) {
+      graphics.textSize(16);
+      graphics.text("FPS: " + frameRate, 10, borderTop+20);
+    }
     graphics.endDraw();
   }
   
-  boolean mouseIsInWindow() {
-    return mouseX >= x && mouseX < width+x &&
-      mouseY >= y && mouseY < height+y;
-  }
-  
-  boolean mouseIsInApp() {
-    return mouseX >= x+window.x && mouseX < x+window.x+window.width &&
-      mouseY >= y+window.y && mouseY < y+window.y+window.height;
-  }
-  
-  boolean mouseIsInBorder() {
-    return mouseIsInWindow() && !mouseIsInApp();
-  }
-
-  boolean mouseIsInResizeBorder() {
-    return resizable && (mouseIsInWindow() && !mouseIsInApp());
-  }
-
   void drawWindow() {
     clearScreen();
     if (focus) {

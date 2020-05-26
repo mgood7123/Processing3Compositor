@@ -25,15 +25,31 @@ class Compositor {
   WindowObject w;
   int windowFocus = -1;
   int lastWindowFocus = -1;
+  boolean displayFPS = false;
+  boolean displayWindowFPS = false;
   
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
   }
   
-  void add(Window window, int width, int height) {
+  Compositor(int width, int height, boolean displayFPS) {
+    graphics = createGraphics(width, height, P3D);
+    this.displayFPS = displayFPS;
+  }
+  
+  void displayWindowFPS(boolean value) {
+    displayWindowFPS = value;
+  }
+
+  void add(Window window, int width, int height, boolean displayFPS) {
     w = new WindowObject(width, height);
+    w.displayFPS = displayFPS ? true : displayWindowFPS;
     windows.add(w);
     w.attach(window);
+  }
+  
+  void add(Window window, int width, int height) {
+    add(window, width, height, false);
   }
   
   void setLocation(int x, int y) {
@@ -61,7 +77,7 @@ class Compositor {
       // locate the top most window
       int topMostIndex = 0;
       
-      // assume last index is top most
+      // assume last index is top most //<>//
       topMostIndex = focusableWindows.size()-1;
 
       WindowObject target = focusableWindows.get(topMostIndex);
@@ -71,15 +87,35 @@ class Compositor {
       windowFocus = windows.size()-1;
     } else windowFocus = -1;
   }
+  
+  void drawGraphics() {
+    if (displayFPS) {
+      graphics.beginDraw();
+      graphics.textSize(16);
+      graphics.text("FPS: " + frameRate, 10, 20);
+      graphics.endDraw();
+    }
+    image(graphics, 0, 0);
+  }
+
+  void drawGraphics(WindowObject window) {
+    graphics.image(
+      window.graphics,
+      window.x,
+      window.y,
+      window.previewWidth,
+      window.previewHeight
+    );
+  }
 
   void setup() {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
-      graphics.image(window.graphics, window.x, window.y, window.previewWidth, window.previewHeight);
-    } //<>//
+      drawGraphics(window);
+    }
     graphics.endDraw();
-    image(graphics, 0, 0);
+    drawGraphics();
   }
   
   void draw() {
@@ -87,10 +123,10 @@ class Compositor {
     graphics.background(0);
     for (WindowObject window: windows) {
       window.draw();
-      graphics.image(window.graphics, window.x, window.y, window.previewWidth, window.previewHeight);
+      drawGraphics(window);
     }
     graphics.endDraw();
-    image(graphics, 0, 0);
+    drawGraphics();
   }
   
   void mousePressed() {
@@ -106,9 +142,9 @@ class Compositor {
       win.focus = true;
       win.mousePressed();
       graphics.beginDraw();
-      graphics.image(win.graphics, win.x, win.y, win.previewWidth, win.previewHeight);
+      drawGraphics(win);
       graphics.endDraw();
-      image(graphics, 0, 0);
+      drawGraphics();
     }
   }
   
@@ -116,19 +152,19 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseDragged();
-      graphics.image(window.graphics, window.x, window.y, window.previewWidth, window.previewHeight);
+      drawGraphics(window);
     }
     graphics.endDraw();
-    image(graphics, 0, 0);
+    drawGraphics();
   }
   
   void mouseReleased() {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseReleased();
-      graphics.image(window.graphics, window.x, window.y, window.previewWidth, window.previewHeight);
+      drawGraphics(window);
     }
     graphics.endDraw();
-    image(graphics, 0, 0);
+    drawGraphics();
   }
 }
