@@ -66,17 +66,11 @@ class WindowObject {
     // is -1 and -2 correct for MacOS mouse pointer?
     window.mouseX = (mouseX-x-window.startX-1);
     window.mouseY = (mouseY-y-window.startY-2);
-    if ((width2-width) != 0) {
-      window.mouseX -= (width2-width) / 2;
-    }
-    if ((height2-height) != 0) {
-      window.mouseY -= (height2-height) / 2;
-    }
   }
 
   void clearScreen() {
     graphics.beginDraw();
-    graphics.background(255, 0, 0);
+    graphics.background(0);
     graphics.endDraw();
   }
   
@@ -144,6 +138,7 @@ class WindowObject {
 
   void setup() {
     correctMouseLocation();
+    window.onResize();
     window.setup();
     drawWindow();
   }
@@ -194,27 +189,15 @@ class WindowObject {
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
       if (resizeTopLeft) {
-        int newX = mouseX-xOffset;
-        int newY = mouseY-yOffset;
-        int newWidth = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        int newHeight = originalHeight - ((mouseY-heightOffset) - originalHeight);
-        x = newX;
-        y = newY;
-        width2 = newWidth;
-        height2 = newHeight;
-        //window.endX = width2-borderLeft-borderRight-2;
-        //window.width = window.endX;
-        //window.endY = height2-borderTop-borderBottom-2;
-        //window.height = window.endY;
+        x = mouseX-xOffset;
+        y = mouseY-yOffset;
+        // subtract
+        width2 = originalWidth - ((mouseX-widthOffset) - originalWidth);
+        height2 = originalHeight - ((mouseY-heightOffset) - originalHeight);
       } else if (resizeBottomRight) {
-        int newWidth = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        int newHeight = originalHeight + ((mouseY-heightOffset) - originalHeight);
-        width2 = newWidth;
-        height2 = newHeight;
-        //window.endX = width2-borderLeft-borderRight-2;
-        //window.width = window.endX;
-        //window.endY = height2-borderTop-borderBottom-2;
-        //window.height = window.endY;
+        // add
+        width2 = originalWidth + ((mouseX-widthOffset) - originalWidth);
+        height2 = originalHeight + ((mouseY-heightOffset) - originalHeight);
       }
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
@@ -230,6 +213,14 @@ class WindowObject {
   
   void mouseReleased() {
     if (clickedOnResizeBorder) {
+      width = width2;
+      height = height2;
+      window.endX = width-borderLeft-borderRight-2;
+      window.width = window.endX;
+      window.endY = height-borderTop-borderBottom-2;
+      window.height = window.endY;
+      window.onResize();
+      graphics = createGraphics(width, height, P3D);
       clickedOnResizeBorder = false;
       resizing = false;
     } else if (clickedOnBorder) {

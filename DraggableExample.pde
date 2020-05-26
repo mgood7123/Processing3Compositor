@@ -9,11 +9,15 @@ class DraggableExample extends Window { //<>//
   float yOffset = 0.0;
   
   @Override
-  void setup() {
+  void onResize() {
     graphics = createGraphics(width, height, P3D);
-    graphics.beginDraw();
     bx = width/2.0;
     by = height/2.0;
+  }
+  
+  @Override
+  void setup() {
+    graphics.beginDraw();
     graphics.rectMode(RADIUS);  
     graphics.endDraw();
   }

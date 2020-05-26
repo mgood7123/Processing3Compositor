@@ -6,6 +6,7 @@ class Window {
   int startX, startY, endX, endY;
   int mouseX, mouseY;
   Window() {} // implicit super constructor required
+  void onResize() {}
   void setup() {}
   void draw() {}
   void mousePressed() {}

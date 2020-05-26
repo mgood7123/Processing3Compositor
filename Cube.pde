@@ -1,7 +1,7 @@
 class Cube extends Window {
 
   @Override
-  void setup() {
+  void onResize() {
     graphics = createGraphics(width, height, P3D);
   }
   
