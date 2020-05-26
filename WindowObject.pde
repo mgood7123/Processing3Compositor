@@ -21,6 +21,8 @@ class WindowObject {
   
   int xOffset = 0;
   int yOffset = 0;
+  int windowStartXOffset = 0;
+  int windowStartYOffset = 0;
   int windowEndXOffset = 0;
   int windowEndYOffset = 0;
   int widthOffset = 0;
@@ -159,6 +161,8 @@ class WindowObject {
       } else if (resizeTopLeft) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
+        windowStartXOffset = window.startX;
+        windowStartYOffset = window.startY;
         windowEndXOffset = window.endX;
         windowEndYOffset = window.endY;
       }
@@ -180,20 +184,25 @@ class WindowObject {
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
       if (resizeTopLeft) {
-
-        // this is incorrect and buggy but it is a start
-          
-        // this just moves the window itself
-        window.startX = (mouseX-xOffset)+borderLeft+1;
-        window.startY = (mouseY-yOffset)+borderTop+1;
-
-        // we need to resize it as well
-        // the bottom right must stay in its same position while we move the window
         
-        window.endX = windowEndXOffset-window.startX;
-        window.width = window.startX-window.endX;
-        window.endY = windowEndYOffset-window.startY;
-        window.height = window.startY-window.endY;
+        // calculate X
+        int originalStartX = windowStartXOffset;
+        int originalEndX = windowEndXOffset;
+        int newStartX = (mouseX-xOffset)+borderLeft+1;
+        int newEndX = originalEndX - (newStartX - originalStartX);
+        
+        // calculate Y
+        int originalStartY = windowStartYOffset;
+        int originalEndY = windowEndYOffset;
+        int newStartY = (mouseY-yOffset)+borderTop+1;
+        int newEndY = originalEndY - (newStartY - originalStartY);
+        
+        // apply X and Y
+        window.startX = newStartX;
+        window.startY = newStartY;
+        window.endX = newEndX;
+        window.endY = newEndY;
+
       } else if (resizeBottomRight) {
         width = mouseX-widthOffset;
         height = mouseY-heightOffset;
