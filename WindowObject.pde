@@ -8,20 +8,28 @@ class WindowObject {
   int y;
   
   boolean locked = false;
+  boolean resizing = false;
   
   boolean focus = false;
   boolean focusable = false;
 
+  boolean clickedOnResizeBorder = false;
   boolean clickedOnBorder = false;
   boolean clickedOnApp = false;
   
   int xOffset = 0;
   int yOffset = 0;
+  int widthOffset = 0;
+  int heightOffset = 0;
 
   int borderTop = 16;
   int borderLeft = 3;
   int borderBottom = 3;
   int borderRight = 3;
+  int resizeTop = 16;
+  int resizeLeft = 3;
+  int resizeBottom = 3;
+  int resizeRight = 3;
     
   boolean draggable = true;
   
@@ -104,6 +112,10 @@ class WindowObject {
     return mouseIsInWindow() && !mouseIsInApp();
   }
 
+  boolean mouseIsInResizeBorder() {
+    return mouseIsInWindow() && !mouseIsInApp();
+  }
+
   void drawWindow() {
     clearScreen();
     if (focus) {
@@ -132,7 +144,12 @@ class WindowObject {
   }
   
   void mousePressed() {
-    if (mouseIsInBorder()) {
+    if (mouseIsInResizeBorder()) {
+      clickedOnResizeBorder = true;
+      locked = true;
+      widthOffset = mouseX-width;
+      heightOffset = mouseY-height;
+    } else if (mouseIsInBorder()) {
       clickedOnBorder = true;
       locked = true;
       xOffset = mouseX-x;
@@ -146,9 +163,21 @@ class WindowObject {
   }
   
   void mouseDragged() {
-    if(clickedOnBorder && locked) {
-      x = mouseX-xOffset; 
-      y = mouseY-yOffset; 
+    if(clickedOnResizeBorder && locked) {
+      x = mouseX-xOffset;
+      y = mouseY-yOffset;
+      width = mouseX-widthOffset;
+      height = mouseY-heightOffset;
+      window.startX = borderLeft+1;
+      window.endX = width-borderLeft-borderRight-2;
+      window.width = this.window.endX;
+
+      window.startY = borderTop+1;
+      window.endY = height-borderTop-borderBottom-2;
+      window.height = this.window.endY;
+    } else if(clickedOnBorder && locked) {
+      x = mouseX-xOffset;
+      y = mouseY-yOffset;
     } else {
       if (clickedOnApp) {
         correctMouseLocation();
@@ -159,7 +188,10 @@ class WindowObject {
   }
   
   void mouseReleased() {
-    if (clickedOnBorder) {
+    if (clickedOnResizeBorder) {
+      clickedOnResizeBorder = false;
+      locked = false;
+    } else if (clickedOnBorder) {
       clickedOnBorder = false;
       locked = false;
     } else if (clickedOnApp) {
