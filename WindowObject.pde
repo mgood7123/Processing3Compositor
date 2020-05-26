@@ -144,8 +144,8 @@ class WindowObject {
     focusable = mouseIsInWindow();
   }
   
-  boolean resizeTopLeft = false;
-  boolean resizeBottomRight = true;
+  boolean resizeTopLeft = true;
+  boolean resizeBottomRight = false;
 
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
@@ -178,8 +178,13 @@ class WindowObject {
       if (resizeTopLeft) {
           //x = mouseX-xOffset;
           //y = mouseY-yOffset;
-          window.startX = borderLeft+1;
-          window.startY = borderTop+1;
+          
+          // this just moves the window itself
+          window.startX = (mouseX-xOffset)+borderLeft+1;
+          window.startY = (mouseY-yOffset)+borderTop+1;
+
+          // we need to resize it as well, but how...
+          
       } else if (resizeBottomRight) {
         width = mouseX-widthOffset;
         height = mouseY-heightOffset;
