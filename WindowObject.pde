@@ -21,6 +21,8 @@ class WindowObject {
   
   int xOffset = 0;
   int yOffset = 0;
+  int windowEndXOffset = 0;
+  int windowEndYOffset = 0;
   int widthOffset = 0;
   int heightOffset = 0;
 
@@ -157,6 +159,8 @@ class WindowObject {
       } else if (resizeTopLeft) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
+        windowEndXOffset = window.endX;
+        windowEndYOffset = window.endY;
       }
     } else if (mouseIsInBorder()) {
       clickedOnBorder = true;
@@ -176,15 +180,18 @@ class WindowObject {
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
       if (resizeTopLeft) {
-          //x = mouseX-xOffset;
-          //y = mouseY-yOffset;
-          
-          // this just moves the window itself
-          window.startX = (mouseX-xOffset)+borderLeft+1;
-          window.startY = (mouseY-yOffset)+borderTop+1;
 
-          // we need to resize it as well, but how...
+        // this is incorrect and buggy but it is a start
           
+        // this just moves the window itself
+        window.startX = (mouseX-xOffset)+borderLeft+1;
+        window.startY = (mouseY-yOffset)+borderTop+1;
+
+        // we need to resize it as well
+        window.endX = windowEndXOffset-window.startX;
+        window.width = window.endX;
+        window.endY = windowEndYOffset-window.startY;
+        window.height = window.endY;
       } else if (resizeBottomRight) {
         width = mouseX-widthOffset;
         height = mouseY-heightOffset;
