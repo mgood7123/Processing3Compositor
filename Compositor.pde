@@ -76,8 +76,8 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
-      graphics.image(window.graphics, window.x, window.y); //<>//
-    }
+      graphics.image(window.graphics, window.x, window.y, window.width2, window.height2);
+    } //<>//
     graphics.endDraw();
     image(graphics, 0, 0);
   }
@@ -87,7 +87,7 @@ class Compositor {
     graphics.background(0);
     for (WindowObject window: windows) {
       window.draw();
-      graphics.image(window.graphics, window.x, window.y);
+      graphics.image(window.graphics, window.x, window.y, window.width2, window.height2);
     }
     graphics.endDraw();
     image(graphics, 0, 0);
@@ -106,8 +106,8 @@ class Compositor {
       win.focus = true;
       win.mousePressed();
       graphics.beginDraw();
-      graphics.image(win.graphics, win.x, win.y);
-      graphics.endDraw();      
+      graphics.image(win.graphics, win.x, win.y, win.width2, win.height2);
+      graphics.endDraw();
       image(graphics, 0, 0);
     }
   }
@@ -116,7 +116,7 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseDragged();
-      graphics.image(window.graphics, window.x, window.y);
+      graphics.image(window.graphics, window.x, window.y, window.width2, window.height2);
     }
     graphics.endDraw();
     image(graphics, 0, 0);
@@ -126,7 +126,7 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseReleased();
-      graphics.image(window.graphics, window.x, window.y);
+      graphics.image(window.graphics, window.x, window.y, window.width2, window.height2);
     }
     graphics.endDraw();
     image(graphics, 0, 0);
