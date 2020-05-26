@@ -12,6 +12,8 @@ class WindowObject {
   
   boolean focus = false;
   boolean focusable = false;
+  boolean draggable = false;
+  boolean resizable = true;
 
   boolean clickedOnResizeBorder = false;
   boolean clickedOnBorder = false;
@@ -22,17 +24,16 @@ class WindowObject {
   int widthOffset = 0;
   int heightOffset = 0;
 
-  int borderTop = 16;
-  int borderLeft = 3;
-  int borderBottom = 3;
-  int borderRight = 3;
   int resizeTop = 16;
   int resizeLeft = 3;
   int resizeBottom = 3;
   int resizeRight = 3;
+
+  int borderTop = 16;
+  int borderLeft = 3;
+  int borderBottom = 3;
+  int borderRight = 3;
     
-  boolean draggable = true;
-  
   WindowObject() {} // implicit super constructor required
 
   WindowObject(int width, int height) {
@@ -113,7 +114,7 @@ class WindowObject {
   }
 
   boolean mouseIsInResizeBorder() {
-    return mouseIsInWindow() && !mouseIsInApp();
+    return resizable && (mouseIsInWindow() && !mouseIsInApp());
   }
 
   void drawWindow() {
@@ -143,17 +144,27 @@ class WindowObject {
     focusable = mouseIsInWindow();
   }
   
+  boolean resizeTopLeft = false;
+  boolean resizeBottomRight = true;
+
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
       clickedOnResizeBorder = true;
-      locked = true;
-      widthOffset = mouseX-width;
-      heightOffset = mouseY-height;
+      resizing = true;
+      if (resizeBottomRight) {
+        widthOffset = mouseX-width;
+        heightOffset = mouseY-height;
+      } else if (resizeTopLeft) {
+        xOffset = mouseX-x;
+        yOffset = mouseY-y;
+      }
     } else if (mouseIsInBorder()) {
       clickedOnBorder = true;
       locked = true;
-      xOffset = mouseX-x;
-      yOffset = mouseY-y;
+      if (draggable) {
+        xOffset = mouseX-x;
+        yOffset = mouseY-y;
+      }
     } else {
       clickedOnApp = true;
       correctMouseLocation();
@@ -163,19 +174,21 @@ class WindowObject {
   }
   
   void mouseDragged() {
-    if(clickedOnResizeBorder && locked) {
-      x = mouseX-xOffset;
-      y = mouseY-yOffset;
-      width = mouseX-widthOffset;
-      height = mouseY-heightOffset;
-      window.startX = borderLeft+1;
-      window.endX = width-borderLeft-borderRight-2;
-      window.width = this.window.endX;
-
-      window.startY = borderTop+1;
-      window.endY = height-borderTop-borderBottom-2;
-      window.height = this.window.endY;
-    } else if(clickedOnBorder && locked) {
+    if(clickedOnResizeBorder && resizing) {
+      if (resizeTopLeft) {
+          //x = mouseX-xOffset;
+          //y = mouseY-yOffset;
+          window.startX = borderLeft+1;
+          window.startY = borderTop+1;
+      } else if (resizeBottomRight) {
+        width = mouseX-widthOffset;
+        height = mouseY-heightOffset;
+        window.endX = width-borderLeft-borderRight-2;
+        window.width = window.endX;
+        window.endY = height-borderTop-borderBottom-2;
+        window.height = window.endY;
+      }
+    } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
       y = mouseY-yOffset;
     } else {
@@ -190,7 +203,7 @@ class WindowObject {
   void mouseReleased() {
     if (clickedOnResizeBorder) {
       clickedOnResizeBorder = false;
-      locked = false;
+      resizing = false;
     } else if (clickedOnBorder) {
       clickedOnBorder = false;
       locked = false;
