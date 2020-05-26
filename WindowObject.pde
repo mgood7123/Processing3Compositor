@@ -3,6 +3,8 @@ class WindowObject {
   Window window;
   
   int height;
+  int minimumHeight = 65;
+  int minimumWidth = 65;
   int width;
   int previewHeight;
   int previewWidth;
@@ -30,12 +32,12 @@ class WindowObject {
   int widthOffset = 0;
   int heightOffset = 0;
 
-  int resizeTop = 16;
+  int resizeTop = 20;
   int resizeLeft = 3;
   int resizeBottom = 3;
   int resizeRight = 3;
 
-  int borderTop = 16;
+  int borderTop = 20;
   int borderLeft = 3;
   int borderBottom = 3;
   int borderRight = 3;
@@ -186,17 +188,23 @@ class WindowObject {
   
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
+      int previewWidth_ = 0;
+      int previewHeight_ = 0;
       if (resizeTopLeft) {
-        x = mouseX-xOffset;
-        y = mouseY-yOffset;
+        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
+        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
+        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
+        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
         // subtract
-        previewWidth = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        previewHeight = originalHeight - ((mouseY-heightOffset) - originalHeight);
       } else if (resizeBottomRight) {
         // add
-        previewWidth = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        previewHeight = originalHeight + ((mouseY-heightOffset) - originalHeight);
+        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
+        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
       }
+      if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+      else previewWidth = previewWidth_;
+      if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+      else previewHeight = previewHeight_;
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
       y = mouseY-yOffset;
