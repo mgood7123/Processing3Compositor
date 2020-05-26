@@ -80,11 +80,44 @@ class WindowObject {
       mouseY >= y+window.y && mouseY < y+window.y+window.height;
   }
   
+  
+  final int MOUSE_CLICKED_NOTHING = -1;
+
+  final int MOUSE_CLICKED_BORDER_LEFT = 1;
+  final int MOUSE_CLICKED_BORDER_RIGHT = 2;
+  final int MOUSE_CLICKED_BORDER_TOP = 3;
+  final int MOUSE_CLICKED_BORDER_BOTTOM = 4;
+  
+  int getClickedBorderType() {
+    if (mouseIsInWindow()) {
+      if (mouseX <= x+borderLeft) return MOUSE_CLICKED_BORDER_LEFT;
+      if (mouseX >= (width+x)-borderRight-1) return MOUSE_CLICKED_BORDER_RIGHT;
+      if (mouseY <= y+borderTop) return MOUSE_CLICKED_BORDER_TOP;
+      if (mouseY >= (height+y)-borderBottom-2) return MOUSE_CLICKED_BORDER_BOTTOM;
+    }
+    return MOUSE_CLICKED_NOTHING;
+  }
+  
   boolean mouseIsInBorder() {
     return mouseIsInWindow() && (
       mouseX <= x+borderLeft || mouseX >= (width+x)-borderRight-1 ||
       mouseY <= y+borderTop || mouseY >= (height+y)-borderBottom-2
     );
+  }
+
+  final int MOUSE_CLICKED_RESIZE_LEFT = 1;
+  final int MOUSE_CLICKED_RESIZE_RIGHT = 2;
+  final int MOUSE_CLICKED_RESIZE_TOP = 3;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM = 4;
+  
+  int getClickedResizeType() {
+    if (mouseIsInWindow()) {
+      if (mouseX <= x+resizeLeft) return MOUSE_CLICKED_RESIZE_LEFT;
+      if (mouseX >= (width+x)-resizeRight-1) return MOUSE_CLICKED_RESIZE_RIGHT;
+      if (mouseY <= y+resizeTop) return MOUSE_CLICKED_RESIZE_TOP;
+      if (mouseY >= (height+y)-resizeBottom-2) return MOUSE_CLICKED_RESIZE_BOTTOM;
+    }
+    return MOUSE_CLICKED_NOTHING;
   }
 
   boolean mouseIsInResizeBorder() {
@@ -167,11 +200,24 @@ class WindowObject {
     focusable = mouseIsInWindow();
   }
   
-  boolean resizeTopLeft = false;
-  boolean resizeBottomRight = !resizeTopLeft;
+  final int MOUSE_DRAGGED_NONE = -1;
+  final int MOUSE_DRAGGED_LEFT = 1;
+  final int MOUSE_DRAGGED_RIGHT = 2;
+  final int MOUSE_DRAGGED_UP = 3;
+  final int MOUSE_DRAGGED_DOWN = 4;
   
+  int getMouseDragDirection() {
+    if (mouseX > pmouseX) return MOUSE_DRAGGED_RIGHT;
+    if (mouseX < pmouseX) return MOUSE_DRAGGED_LEFT;
+    if (mouseY > pmouseY) return MOUSE_DRAGGED_DOWN;
+    if (mouseY < pmouseY) return MOUSE_DRAGGED_UP;
+    return MOUSE_DRAGGED_NONE;
+  }
+
   int originalWidth;
   int originalHeight;
+  
+  int resizeType;
 
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
@@ -181,13 +227,19 @@ class WindowObject {
       heightOffset = mouseY-height;
       originalWidth = width;
       originalHeight = height;
-      if (resizeTopLeft) {
+      mouseDragType = MOUSE_CLICKED_NOTHING;
+      resizeType = getClickedResizeType();
+      if (
+        resizeType == MOUSE_CLICKED_RESIZE_TOP ||
+        resizeType == MOUSE_CLICKED_RESIZE_LEFT
+      ) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
       }
     } else if (mouseIsInBorder()) {
       clickedOnBorder = true;
       locked = true;
+      mouseDragType = MOUSE_CLICKED_NOTHING;
       if (draggable) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
@@ -200,25 +252,46 @@ class WindowObject {
     drawWindow();
   }
   
+  int mouseDragType = MOUSE_CLICKED_NOTHING;
+    
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
       int previewWidth_ = 0;
       int previewHeight_ = 0;
-      if (resizeTopLeft) {
+      mouseDragType = getMouseDragDirection();
+      if (
+        resizeType == MOUSE_CLICKED_RESIZE_TOP ||
+        resizeType == MOUSE_CLICKED_RESIZE_LEFT
+      ) {
         // subtract
-        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
-        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
-        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
-      } else if (resizeBottomRight) {
+        if (resizeType == MOUSE_CLICKED_RESIZE_LEFT) {
+          previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
+          if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
+          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+          else previewWidth = previewWidth_;
+        }
+        if (resizeType == MOUSE_CLICKED_RESIZE_TOP) {
+          previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
+          if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
+          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+          else previewHeight = previewHeight_;
+        }
+      } else if (
+        resizeType == MOUSE_CLICKED_RESIZE_BOTTOM ||
+        resizeType == MOUSE_CLICKED_RESIZE_RIGHT
+      ) {
         // add
-        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
+        if (resizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+          previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
+          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+          else previewWidth = previewWidth_;
+        }
+        if (resizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
+          previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
+          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+          else previewHeight = previewHeight_;
+        }
       }
-      if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-      else previewWidth = previewWidth_;
-      if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-      else previewHeight = previewHeight_;
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
       y = mouseY-yOffset;
@@ -233,13 +306,24 @@ class WindowObject {
   
   void mouseReleased() {
     if (clickedOnResizeBorder) {
-      width = previewWidth;
-      height = previewHeight;
-      window.width = width-borderLeft-borderRight-2;
-      window.height = height-borderTop-borderBottom-2;
-      window.onResize();
-      window.setup();
-      graphics = createGraphics(width, height, P3D);
+      if (mouseDragType != MOUSE_CLICKED_NOTHING) {
+        if (
+          resizeType == MOUSE_CLICKED_RESIZE_LEFT ||
+          resizeType == MOUSE_CLICKED_RESIZE_RIGHT
+        ) {
+          width = previewWidth;
+          window.width = width-borderLeft-borderRight-2;
+        } else if (
+          resizeType == MOUSE_CLICKED_RESIZE_TOP ||
+          resizeType == MOUSE_CLICKED_RESIZE_BOTTOM
+        ) {
+          height = previewHeight;
+          window.height = height-borderTop-borderBottom-2;
+        }
+        window.onResize();
+        window.setup();
+        graphics = createGraphics(width, height, P3D);
+      }
       clickedOnResizeBorder = false;
       resizing = false;
     } else if (clickedOnBorder) {
