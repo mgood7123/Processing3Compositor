@@ -18,7 +18,7 @@ class WindowObject {
   
   boolean focus = false;
   boolean focusable = false;
-  boolean draggable = false;
+  boolean draggable = true;
   boolean resizable = true;
 
   boolean clickedOnResizeBorder = false;
@@ -34,7 +34,7 @@ class WindowObject {
   int widthOffset = 0;
   int heightOffset = 0;
 
-  int resizeTop = 20;
+  int resizeTop = 3;
   int resizeLeft = 3;
   int resizeBottom = 3;
   int resizeRight = 3;
@@ -66,8 +66,8 @@ class WindowObject {
   
   void correctMouseLocation() {
     // is -1 and -2 correct for MacOS mouse pointer?
-    window.mouseX = (mouseX-x-window.x-1);
-    window.mouseY = (mouseY-y-window.y-2);
+    window.mouseX = mouseX-x-window.x-1;
+    window.mouseY = mouseY-y-window.y-2;
   }
 
   boolean mouseIsInWindow() {
@@ -81,11 +81,19 @@ class WindowObject {
   }
   
   boolean mouseIsInBorder() {
-    return mouseIsInWindow() && !mouseIsInApp();
+    return mouseIsInWindow() && (
+      mouseX <= x+borderLeft || mouseX >= (width+x)-borderRight-1 ||
+      mouseY <= y+borderTop || mouseY >= (height+y)-borderBottom-2
+    );
   }
 
   boolean mouseIsInResizeBorder() {
-    return resizable && (mouseIsInWindow() && !mouseIsInApp());
+    return resizable ? (
+      mouseIsInWindow() && (
+        mouseX <= x+resizeLeft || mouseX >= (width+x)-resizeRight-1 ||
+        mouseY <= y+resizeTop || mouseY >= (height+y)-resizeBottom-2
+      )
+    ) : false;
   }
 
   void clearScreen() {
