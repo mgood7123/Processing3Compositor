@@ -4,8 +4,8 @@ class WindowObject {
   
   int height;
   int width;
-  int height2;
-  int width2;
+  int previewHeight;
+  int previewWidth;
   int x;
   int y;
   
@@ -45,27 +45,25 @@ class WindowObject {
   WindowObject(int width, int height) {
     this.width = width;
     this.height = height;
-    width2 = width;
-    height2 = height;
+    previewWidth = width;
+    previewHeight = height;
     graphics = createGraphics(width, height, P3D);
   }
   
   void attach(Window window) {
     this.window = window;
     
-    this.window.startX = borderLeft+1;
-    this.window.endX = width-borderLeft-borderRight-2;
-    this.window.width = this.window.endX;
+    this.window.x = borderLeft+1;
+    this.window.width = width-borderLeft-borderRight-2;
 
-    this.window.startY = borderTop+1;
-    this.window.endY = height-borderTop-borderBottom-2;
-    this.window.height = this.window.endY;
+    this.window.y = borderTop+1;
+    this.window.height = height-borderTop-borderBottom-2;
   }
   
   void correctMouseLocation() {
     // is -1 and -2 correct for MacOS mouse pointer?
-    window.mouseX = (mouseX-x-window.startX-1);
-    window.mouseY = (mouseY-y-window.startY-2);
+    window.mouseX = (mouseX-x-window.x-1);
+    window.mouseY = (mouseY-y-window.y-2);
   }
 
   void clearScreen() {
@@ -99,22 +97,22 @@ class WindowObject {
     graphics.beginDraw();
     graphics.image(
       window.graphics,
-      window.startX,
-      window.startY,
-      window.endX,
-      window.endY
+      window.x,
+      window.y,
+      window.width,
+      window.height
     );
     graphics.endDraw();
   }
   
   boolean mouseIsInWindow() {
-    return mouseX >= x && mouseX < width2+x &&
-      mouseY >= y && mouseY < height2+y;
+    return mouseX >= x && mouseX < width+x &&
+      mouseY >= y && mouseY < height+y;
   }
   
   boolean mouseIsInApp() {
-    return mouseX >= x+window.startX && mouseX < x+window.startX+window.endX &&
-      mouseY >= y+window.startY && mouseY < y+window.startY+window.endY;
+    return mouseX >= x+window.x && mouseX < x+window.x+window.width &&
+      mouseY >= y+window.y && mouseY < y+window.y+window.height;
   }
   
   boolean mouseIsInBorder() {
@@ -163,10 +161,10 @@ class WindowObject {
     if (mouseIsInResizeBorder()) {
       clickedOnResizeBorder = true;
       resizing = true;
-      widthOffset = mouseX-width2;
-      heightOffset = mouseY-height2;
-      originalWidth = width2;
-      originalHeight = height2;
+      widthOffset = mouseX-width;
+      heightOffset = mouseY-height;
+      originalWidth = width;
+      originalHeight = height;
       if (resizeTopLeft) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
@@ -192,12 +190,12 @@ class WindowObject {
         x = mouseX-xOffset;
         y = mouseY-yOffset;
         // subtract
-        width2 = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        height2 = originalHeight - ((mouseY-heightOffset) - originalHeight);
+        previewWidth = originalWidth - ((mouseX-widthOffset) - originalWidth);
+        previewHeight = originalHeight - ((mouseY-heightOffset) - originalHeight);
       } else if (resizeBottomRight) {
         // add
-        width2 = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        height2 = originalHeight + ((mouseY-heightOffset) - originalHeight);
+        previewWidth = originalWidth + ((mouseX-widthOffset) - originalWidth);
+        previewHeight = originalHeight + ((mouseY-heightOffset) - originalHeight);
       }
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
@@ -213,13 +211,12 @@ class WindowObject {
   
   void mouseReleased() {
     if (clickedOnResizeBorder) {
-      width = width2;
-      height = height2;
-      window.endX = width-borderLeft-borderRight-2;
-      window.width = window.endX;
-      window.endY = height-borderTop-borderBottom-2;
-      window.height = window.endY;
+      width = previewWidth;
+      height = previewHeight;
+      window.width = width-borderLeft-borderRight-2;
+      window.height = height-borderTop-borderBottom-2;
       window.onResize();
+      window.setup();
       graphics = createGraphics(width, height, P3D);
       clickedOnResizeBorder = false;
       resizing = false;
