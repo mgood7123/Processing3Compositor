@@ -188,6 +188,8 @@ class WindowObject {
         window.startY = (mouseY-yOffset)+borderTop+1;
 
         // we need to resize it as well
+        // the bottom right must stay in its same position while we move the window
+        
         window.endX = windowEndXOffset-window.startX;
         window.width = window.endX;
         window.endY = windowEndYOffset-window.startY;
