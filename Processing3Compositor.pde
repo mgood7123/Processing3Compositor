@@ -5,21 +5,23 @@ void settings() {
 }
 
 void setup() {
-  compositor = new Compositor(width, height, true);
-  compositor.displayWindowFPS(true);
-  compositor.add(new DraggableExample(), 200, 200);
+  compositor = new Compositor(width, height);
+  compositor.displayFPS = true;
+  compositor.displayWindowFPS = true;
+  compositor.debug = true;
+  compositor.add(new Applications_DraggableExample(), 200, 200);
   compositor.setLocation(0 ,0);
-  compositor.add(new Cube(), 200, 200);
+  compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(0, 200);
-  compositor.add(new Cube(), 200, 200);
+  compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(200, 0);
-  compositor.add(new Cube(), 200, 200);
+  compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(200, 200);
   compositor.setup();
 }
 
 void draw() {
-  compositor.draw();
+  compositor.draw(); //<>//
 }
 
 void mousePressed() {

@@ -1,4 +1,4 @@
-class Cube extends Window {
+class Applications_Cube extends Window {
 
   @Override
   void onResize() {

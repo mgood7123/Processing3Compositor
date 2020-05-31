@@ -27,23 +27,16 @@ class Compositor {
   int lastWindowFocus = -1;
   boolean displayFPS = false;
   boolean displayWindowFPS = false;
+  boolean debug = false;
   
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
   }
   
-  Compositor(int width, int height, boolean displayFPS) {
-    graphics = createGraphics(width, height, P3D);
-    this.displayFPS = displayFPS;
-  }
-  
-  void displayWindowFPS(boolean value) {
-    displayWindowFPS = value;
-  }
-
   void add(Window window, int width, int height, boolean displayFPS) {
     w = new WindowObject(width, height);
     w.displayFPS = displayFPS ? true : displayWindowFPS;
+    w.debug = debug;
     windows.add(w);
     w.attach(window);
   }

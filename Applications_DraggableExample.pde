@@ -1,4 +1,4 @@
-class DraggableExample extends Window { //<>//
+class Applications_DraggableExample extends Window {
   float bx;
   float by;
   int boxSizeX = 20;

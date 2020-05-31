@@ -3,6 +3,7 @@ class WindowObject {
   Window window;
   
   boolean displayFPS = false;
+  boolean debug = false;
   
   int height;
   int minimumHeight = 65;
@@ -109,24 +110,117 @@ class WindowObject {
   final int MOUSE_CLICKED_RESIZE_RIGHT = 2;
   final int MOUSE_CLICKED_RESIZE_TOP = 3;
   final int MOUSE_CLICKED_RESIZE_BOTTOM = 4;
+  final int MOUSE_CLICKED_RESIZE_TOP_LEFT = 5;
+  final int MOUSE_CLICKED_RESIZE_TOP_RIGHT = 6;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM_LEFT = 7;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT = 8;
+  
+  private class RectangleCorners {
+    int topLeftX, topLeftY;
+    int topRightX, topRightY;
+    int bottomLeftX, bottomLeftY;
+    int bottomRightX, bottomRightY;
+    
+    RectangleCorners(int startX, int startY, int endX, int endY) {
+      topLeftX = startX;
+      topLeftY = startY;
+      topRightX = endX;
+      topRightY = startY;
+      bottomLeftX = startX;
+      bottomLeftY = endY;
+      bottomRightX = endX;
+      bottomRightY = endY;
+    }
+  }
+  
+  private class Hitbox {
+    RectangleCorners hitbox;
+    int size;
+    boolean hit;
+        
+    void drawHitbox() {
+      graphics.beginDraw();
+      graphics.rectMode(CORNER);
+      graphics.stroke(0);
+      graphics.fill(255, 255, 0);
+      graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX, hitbox.bottomRightY);
+      graphics.endDraw();
+    }
+    
+    private int roundToNearestMultiple(int x, int n) {
+      int mod = x % n;
+      if(mod >= (float) n / 2) {
+        x += (n-mod);
+      } else {
+        x -= mod;
+      }
+      return x;
+    }
+
+    Hitbox(int x, int y, int size) {
+      // 0, 1, [2], 3, 4
+      int sr = roundToNearestMultiple(size, 3)/2;
+      this.size = sr;
+      int s = size/2;
+      int x1 = x-s, y1 = y-s, x2 = x+size, y2 = y+size;
+      hitbox = new RectangleCorners(x1, y1, x2, y2);
+      drawHitbox();
+    }
+    
+    boolean mouseIsInHitbox() {
+      int x1 = hitbox.topLeftX;
+      int y1 = hitbox.topLeftY;
+      int x2 = hitbox.bottomRightX;
+      int y2 = hitbox.bottomRightY;
+      boolean r1 = mouseX > x1;
+      boolean r3 = mouseY > y1;
+      boolean r2 = mouseX < x2;
+      boolean r4 = mouseY < y2;
+      hit = r1 && r2 && r2 && r3 && r4;
+      println("x1 = " + x1 + ", y1 = " + y1 + ", x2 = " + x2 + ", y2 = " + y2);
+      println("hit = " + hit);
+      return hit;
+    }
+  }
+  
+  Hitbox hitboxTopLeft;
+  Hitbox hitboxTopRight;
+  Hitbox hitboxBottomLeft;
+  Hitbox hitboxBottomRight;
   
   int getClickedResizeType() {
+
+    RectangleCorners rc = new RectangleCorners(x, y, width+x, height+y);
+    
+    int cr = 50;
+    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr);
+    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr);
+    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr);
+    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr);
+
     if (mouseIsInWindow()) {
+      
+      if (hitboxTopLeft.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_TOP_LEFT;
+      if (hitboxBottomLeft.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_BOTTOM_LEFT;
       if (mouseX <= x+resizeLeft) return MOUSE_CLICKED_RESIZE_LEFT;
+      
+      if (hitboxTopRight.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_TOP_RIGHT;
+      if (hitboxBottomRight.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT;
       if (mouseX >= (width+x)-resizeRight-1) return MOUSE_CLICKED_RESIZE_RIGHT;
+
       if (mouseY <= y+resizeTop) return MOUSE_CLICKED_RESIZE_TOP;
       if (mouseY >= (height+y)-resizeBottom-2) return MOUSE_CLICKED_RESIZE_BOTTOM;
     }
     return MOUSE_CLICKED_NOTHING;
   }
+  
+  int clickedResizeType = MOUSE_CLICKED_NOTHING;
 
   boolean mouseIsInResizeBorder() {
-    return resizable ? (
-      mouseIsInWindow() && (
-        mouseX <= x+resizeLeft || mouseX >= (width+x)-resizeRight-1 ||
-        mouseY <= y+resizeTop || mouseY >= (height+y)-resizeBottom-2
-      )
-    ) : false;
+    if (!resizable) return false;
+    clickedResizeType = getClickedResizeType();
+    if (clickedResizeType == MOUSE_CLICKED_NOTHING) return false;
+    return true;
   }
 
   void clearScreen() {
@@ -142,6 +236,12 @@ class WindowObject {
     graphics.fill(fill__);
     graphics.rect(0, 0, width, height, 10);
     graphics.endDraw();
+    int cr = 50;
+    RectangleCorners rc = new RectangleCorners(0, 0, width, height);
+    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr);
+    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr);
+    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr);
+    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr);
   }
   
   void drawBordersLocked() {
@@ -228,10 +328,12 @@ class WindowObject {
       originalWidth = width;
       originalHeight = height;
       mouseDragType = MOUSE_CLICKED_NOTHING;
-      resizeType = getClickedResizeType();
+      println("clickedResizeType = " + clickedResizeType);
       if (
-        resizeType == MOUSE_CLICKED_RESIZE_TOP ||
-        resizeType == MOUSE_CLICKED_RESIZE_LEFT
+        clickedResizeType == MOUSE_CLICKED_RESIZE_TOP ||
+        clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT ||
+        clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT ||
+        clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT
       ) {
         xOffset = mouseX-x;
         yOffset = mouseY-y;
@@ -260,38 +362,77 @@ class WindowObject {
       int previewHeight_ = 0;
       mouseDragType = getMouseDragDirection();
       if (
-        resizeType == MOUSE_CLICKED_RESIZE_TOP ||
-        resizeType == MOUSE_CLICKED_RESIZE_LEFT
+        clickedResizeType == MOUSE_CLICKED_RESIZE_TOP ||
+        clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT
       ) {
         // subtract
-        if (resizeType == MOUSE_CLICKED_RESIZE_LEFT) {
+        if (clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT) {
           previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
           if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
           if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
           else previewWidth = previewWidth_;
-        }
-        if (resizeType == MOUSE_CLICKED_RESIZE_TOP) {
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP) {
           previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
           if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
           if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
           else previewHeight = previewHeight_;
         }
       } else if (
-        resizeType == MOUSE_CLICKED_RESIZE_BOTTOM ||
-        resizeType == MOUSE_CLICKED_RESIZE_RIGHT
+        clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM ||
+        clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT
       ) {
         // add
-        if (resizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+        if (
+          clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT
+        ) {
           previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
           if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
           else previewWidth = previewWidth_;
-        }
-        if (resizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
+          previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
+          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+          else previewHeight = previewHeight_;
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+          previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
+          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+          else previewWidth = previewWidth_;
+        } else if (resizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
           previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
           if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
           else previewHeight = previewHeight_;
         }
-      }
+      } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
+        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
+        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
+        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+        else previewWidth = previewWidth_;
+        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
+        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
+        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+        else previewHeight = previewHeight_;
+      } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
+        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
+        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+        else previewWidth = previewWidth_;
+        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
+        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
+        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+        else previewHeight = previewHeight_;
+      } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
+        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
+        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
+        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+        else previewWidth = previewWidth_;
+        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
+        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+        else previewHeight = previewHeight_;
+      } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
+        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
+        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+        else previewWidth = previewWidth_;
+        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
+        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+        else previewHeight = previewHeight_;      }
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
       y = mouseY-yOffset;
@@ -308,21 +449,32 @@ class WindowObject {
     if (clickedOnResizeBorder) {
       if (mouseDragType != MOUSE_CLICKED_NOTHING) {
         if (
-          resizeType == MOUSE_CLICKED_RESIZE_LEFT ||
-          resizeType == MOUSE_CLICKED_RESIZE_RIGHT
+          clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT
         ) {
           width = previewWidth;
           window.width = width-borderLeft-borderRight-2;
         } else if (
-          resizeType == MOUSE_CLICKED_RESIZE_TOP ||
-          resizeType == MOUSE_CLICKED_RESIZE_BOTTOM
+          clickedResizeType == MOUSE_CLICKED_RESIZE_TOP ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM
         ) {
+          height = previewHeight;
+          window.height = height-borderTop-borderBottom-2;
+        } else if (
+          clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT ||
+          clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT
+        ) {
+          width = previewWidth;
+          window.width = width-borderLeft-borderRight-2;
           height = previewHeight;
           window.height = height-borderTop-borderBottom-2;
         }
         window.onResize();
         window.setup();
         graphics = createGraphics(width, height, P3D);
+        clickedResizeType = MOUSE_CLICKED_NOTHING;
       }
       clickedOnResizeBorder = false;
       resizing = false;
