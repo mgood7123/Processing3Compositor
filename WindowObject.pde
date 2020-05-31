@@ -81,40 +81,6 @@ class WindowObject {
       mouseY >= y+window.y && mouseY < y+window.y+window.height;
   }
   
-  
-  final int MOUSE_CLICKED_NOTHING = -1;
-
-  final int MOUSE_CLICKED_BORDER_LEFT = 1;
-  final int MOUSE_CLICKED_BORDER_RIGHT = 2;
-  final int MOUSE_CLICKED_BORDER_TOP = 3;
-  final int MOUSE_CLICKED_BORDER_BOTTOM = 4;
-  
-  int getClickedBorderType() {
-    if (mouseIsInWindow()) {
-      if (mouseX <= x+borderLeft) return MOUSE_CLICKED_BORDER_LEFT;
-      if (mouseX >= (width+x)-borderRight-1) return MOUSE_CLICKED_BORDER_RIGHT;
-      if (mouseY <= y+borderTop) return MOUSE_CLICKED_BORDER_TOP;
-      if (mouseY >= (height+y)-borderBottom-2) return MOUSE_CLICKED_BORDER_BOTTOM;
-    }
-    return MOUSE_CLICKED_NOTHING;
-  }
-  
-  boolean mouseIsInBorder() {
-    return mouseIsInWindow() && (
-      mouseX <= x+borderLeft || mouseX >= (width+x)-borderRight-1 ||
-      mouseY <= y+borderTop || mouseY >= (height+y)-borderBottom-2
-    );
-  }
-
-  final int MOUSE_CLICKED_RESIZE_LEFT = 1;
-  final int MOUSE_CLICKED_RESIZE_RIGHT = 2;
-  final int MOUSE_CLICKED_RESIZE_TOP = 3;
-  final int MOUSE_CLICKED_RESIZE_BOTTOM = 4;
-  final int MOUSE_CLICKED_RESIZE_TOP_LEFT = 5;
-  final int MOUSE_CLICKED_RESIZE_TOP_RIGHT = 6;
-  final int MOUSE_CLICKED_RESIZE_BOTTOM_LEFT = 7;
-  final int MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT = 8;
-  
   private class RectangleCorners {
     int topLeftX, topLeftY;
     int topRightX, topRightY;
@@ -188,8 +154,51 @@ class WindowObject {
   Hitbox hitboxBottomLeft;
   Hitbox hitboxBottomRight;
   
-  int getClickedResizeType() {
+  final int MOUSE_CLICKED_NOTHING = -1;
 
+  final int MOUSE_CLICKED_BORDER_LEFT = 1;
+  final int MOUSE_CLICKED_BORDER_RIGHT = 2;
+  final int MOUSE_CLICKED_BORDER_TOP = 3;
+  final int MOUSE_CLICKED_BORDER_BOTTOM = 4;
+  
+  final int MOUSE_CLICKED_RESIZE_LEFT = 1;
+  final int MOUSE_CLICKED_RESIZE_RIGHT = 2;
+  final int MOUSE_CLICKED_RESIZE_TOP = 3;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM = 4;
+  final int MOUSE_CLICKED_RESIZE_TOP_LEFT = 5;
+  final int MOUSE_CLICKED_RESIZE_TOP_RIGHT = 6;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM_LEFT = 7;
+  final int MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT = 8;
+  
+  int clickedBorderType = MOUSE_CLICKED_NOTHING;
+  int clickedResizeType = MOUSE_CLICKED_NOTHING;
+  
+  void getClickedBorderType() {
+    clickedBorderType = MOUSE_CLICKED_NOTHING;
+
+    if (mouseIsInWindow() && !mouseIsInApp()) {
+      if (mouseX <= x+borderLeft) {
+        clickedBorderType = MOUSE_CLICKED_BORDER_LEFT;
+      } else if (mouseX >= (width+x)-borderRight-1) {
+        clickedBorderType = MOUSE_CLICKED_BORDER_RIGHT;
+      } else if (mouseY <= y+borderTop) {
+        clickedBorderType = MOUSE_CLICKED_BORDER_TOP;
+      } else if (mouseY >= (height+y)-borderBottom-2) {
+        clickedBorderType = MOUSE_CLICKED_BORDER_BOTTOM;
+      }
+    }
+  }
+  
+  boolean mouseIsInBorder() {
+    getClickedBorderType();
+    return clickedBorderType != MOUSE_CLICKED_NOTHING;
+  }
+
+  void getClickedResizeType() {
+    clickedResizeType = MOUSE_CLICKED_NOTHING;
+    
+    if (!resizable) return;
+    
     RectangleCorners rc = new RectangleCorners(x, y, width+x, height+y);
     
     int cr = 50;
@@ -197,28 +206,30 @@ class WindowObject {
     hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr);
     hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr);
     hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr);
-
-    if (mouseIsInWindow()) {
-      
-      if (hitboxTopLeft.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_TOP_LEFT;
-      if (hitboxBottomLeft.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_BOTTOM_LEFT;
-      if (mouseX <= x+resizeLeft) return MOUSE_CLICKED_RESIZE_LEFT;
-      
-      if (hitboxTopRight.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_TOP_RIGHT;
-      if (hitboxBottomRight.mouseIsInHitbox()) return MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT;
-      if (mouseX >= (width+x)-resizeRight-1) return MOUSE_CLICKED_RESIZE_RIGHT;
-
-      if (mouseY <= y+resizeTop) return MOUSE_CLICKED_RESIZE_TOP;
-      if (mouseY >= (height+y)-resizeBottom-2) return MOUSE_CLICKED_RESIZE_BOTTOM;
+    
+    if (mouseIsInWindow() && !mouseIsInApp()) {
+      if (hitboxTopLeft.mouseIsInHitbox()) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_LEFT;
+      } else if (hitboxBottomLeft.mouseIsInHitbox()) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_LEFT;
+      } else if (mouseX <= x+resizeLeft) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_LEFT;
+      } else if (hitboxTopRight.mouseIsInHitbox()) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_RIGHT;
+      } else if (hitboxBottomRight.mouseIsInHitbox()) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT;
+      } else if (mouseX >= (width+x)-resizeRight-1) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_RIGHT;
+      } else if (mouseY <= y+resizeTop) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_TOP;
+      } else if (mouseY >= (height+y)-resizeBottom-2) {
+        clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM;
+      }
     }
-    return MOUSE_CLICKED_NOTHING;
   }
   
-  int clickedResizeType = MOUSE_CLICKED_NOTHING;
-
   boolean mouseIsInResizeBorder() {
-    if (!resizable) return false;
-    clickedResizeType = getClickedResizeType();
+    getClickedResizeType();
     if (clickedResizeType == MOUSE_CLICKED_NOTHING) return false;
     return true;
   }
