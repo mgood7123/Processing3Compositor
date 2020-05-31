@@ -483,6 +483,7 @@ class WindowObject {
           window.height = height-borderTop-borderBottom-2;
         }
         window.onResize();
+        // TODO: implement onSave/onRestore
         window.setup();
         graphics = createGraphics(width, height, P3D);
         clickedResizeType = MOUSE_CLICKED_NOTHING;
