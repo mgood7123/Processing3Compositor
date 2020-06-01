@@ -293,10 +293,17 @@ class WindowObject {
     }
     drawGraphics();
   }
+  
+  void resizeWindow() {
+    String type = window.onRequestType();
+    window.onBeforeResize();
+    window.graphics = createGraphics(window.width, window.height, type);
+    window.onAfterResize();
+  }
 
   void setup() {
     correctMouseLocation();
-    window.onResize();
+    resizeWindow();
     window.setup();
     drawWindow();
   }
@@ -482,9 +489,7 @@ class WindowObject {
           height = previewHeight;
           window.height = height-borderTop-borderBottom-2;
         }
-        window.onResize();
-        // TODO: implement onSave/onRestore
-        window.setup();
+        resizeWindow();
         graphics = createGraphics(width, height, P3D);
         clickedResizeType = MOUSE_CLICKED_NOTHING;
       }

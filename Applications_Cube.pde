@@ -1,9 +1,4 @@
 class Applications_Cube extends Window {
-
-  @Override
-  void onResize() {
-    graphics = createGraphics(width, height, P3D);
-  }
   
   @Override
   void draw() {

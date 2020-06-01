@@ -7,12 +7,7 @@ class Applications_DraggableExample extends Window {
   boolean locked = false;
   float xOffset = 0.0;
   float yOffset = 0.0;
-  
-  @Override
-  void onResize() {
-    graphics = createGraphics(width, height, P3D);
-  }
-  
+    
   @Override
   void setup() {
     graphics.beginDraw();

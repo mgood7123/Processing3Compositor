@@ -6,7 +6,9 @@ class Window {
   int x, y;
   int mouseX, mouseY;
   Window() {} // implicit super constructor required
-  void onResize() {}
+  void onBeforeResize() {}
+  String onRequestType() { return P3D; }
+  void onAfterResize() {}
   void setup() {}
   void draw() {}
   void mousePressed() {}
