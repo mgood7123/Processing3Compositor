@@ -99,20 +99,33 @@ class WindowObject {
     }
   }
   
-  private class Hitbox {
+  class Hitbox {
     RectangleCorners hitbox;
-    int size;
-    boolean hit;
-        
-    void drawHitbox() {
+    int size = -1;
+    boolean hit = false;
+    boolean debug = false;
+    
+    void drawHitbox(int red, int green, int blue) {
       graphics.beginDraw();
       graphics.rectMode(CORNER);
       graphics.stroke(0);
-      graphics.fill(255, 255, 0);
-      graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX, hitbox.bottomRightY);
+      graphics.fill(red, green, blue);
+      graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX+size, hitbox.bottomRightY+size);
       graphics.endDraw();
     }
     
+    void drawHitboxUnhit() {
+      drawHitbox(255, 0, 0);
+    }
+    
+    void drawHitboxMaybeHit() {
+      drawHitbox(128, 128, 0);
+    }
+
+    void drawHitboxHit() {
+      drawHitbox(0, 255, 0);
+    }
+
     private int roundToNearestMultiple(int x, int n) {
       int mod = x % n;
       if(mod >= (float) n / 2) {
@@ -123,17 +136,24 @@ class WindowObject {
       return x;
     }
 
-    Hitbox(int x, int y, int size) {
+    Hitbox(int x, int y, int size, boolean debug_) {
+      debug = debug_;
       // 0, 1, [2], 3, 4
       //int sr = roundToNearestMultiple(size, 3)/2;
-      //this.size = sr;
       int s = size/2;
+      this.size = s;
       int x1 = x-s;
       int y1 = y-s;
-      int x2 = x+size;
-      int y2 = y+size;
+      int x2 = x+s;
+      int y2 = y+s;
       hitbox = new RectangleCorners(x1, y1, x2, y2);
-      drawHitbox();
+    }
+    
+    void draw(int offsetX, int offsetY) {
+      if (debug) {
+        if (mouseIsInHitbox(offsetX, offsetY)) drawHitboxHit();
+        else drawHitboxUnhit();
+      }
     }
     
     boolean mouseIsInHitbox(int offsetX, int offsetY) {
@@ -141,6 +161,8 @@ class WindowObject {
       int y1 = hitbox.topLeftY+offsetY;
       int x2 = hitbox.bottomRightX+offsetX;
       int y2 = hitbox.bottomRightY+offsetY;
+      println("mouseX = " + mouseX + ", mouseY = " + mouseY);
+      println("x1 = " + x1 + ", x2 = " + x2 + ", y1 = " + y1 + ", y2 = " + y2);
       boolean r1 = mouseX > x1;
       boolean r3 = mouseY > y1;
       boolean r2 = mouseX < x2;
@@ -237,6 +259,13 @@ class WindowObject {
     graphics.endDraw();
   }
   
+  boolean resizingTopLeft = false;
+  boolean resizingTopRight = false;
+  boolean resizingBottomLeft = false;
+  boolean resizingBottomRight = false;
+        //  if (resizingTopLeft) hitboxTopLeft.drawHitboxHit();
+        //else hitboxTopLeft.drawHitboxMaybeHit();
+
   void drawBordersWithFill(int fill__) {
     graphics.beginDraw();
     graphics.rectMode(CORNER);
@@ -246,10 +275,55 @@ class WindowObject {
     graphics.endDraw();
     int cr = 50;
     RectangleCorners rc = new RectangleCorners(0, 0, width, height);
-    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr);
-    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr);
-    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr);
-    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr);
+    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr,debug);
+    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr,debug);
+    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr,debug);
+    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr,debug);
+
+    if (!resizing) {
+      if (mouseIsInWindow() && !mouseIsInApp()) {
+        if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
+          hitboxTopLeft.drawHitboxMaybeHit();
+          hitboxTopRight.drawHitboxUnhit();
+          hitboxBottomLeft.drawHitboxUnhit();
+          hitboxBottomRight.drawHitboxUnhit();
+        } else if (hitboxTopRight.mouseIsInHitbox(x,y)) {
+          hitboxTopLeft.drawHitboxUnhit();
+          hitboxTopRight.drawHitboxMaybeHit();
+          hitboxBottomLeft.drawHitboxUnhit();
+          hitboxBottomRight.drawHitboxUnhit();
+        } else if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
+          hitboxTopLeft.drawHitboxUnhit();
+          hitboxTopRight.drawHitboxUnhit();
+          hitboxBottomLeft.drawHitboxMaybeHit();
+          hitboxBottomRight.drawHitboxUnhit();
+        } else if (hitboxBottomRight.mouseIsInHitbox(x,y)) {
+          hitboxTopLeft.drawHitboxUnhit();
+          hitboxTopRight.drawHitboxUnhit();
+          hitboxBottomLeft.drawHitboxUnhit();
+          hitboxBottomRight.drawHitboxMaybeHit();
+        } else {
+          hitboxTopLeft.drawHitboxUnhit();
+          hitboxTopRight.drawHitboxUnhit();
+          hitboxBottomLeft.drawHitboxUnhit();
+          hitboxBottomRight.drawHitboxUnhit();
+        }
+      } else {
+        hitboxTopLeft.drawHitboxUnhit();
+        hitboxTopRight.drawHitboxUnhit();
+        hitboxBottomLeft.drawHitboxUnhit();
+        hitboxBottomRight.drawHitboxUnhit();
+      }
+    } else {
+        if (resizingTopLeft) hitboxTopLeft.drawHitboxHit();
+        else hitboxTopLeft.drawHitboxUnhit();
+        if (resizingTopRight) hitboxTopRight.drawHitboxHit();
+        else hitboxTopRight.drawHitboxUnhit();
+        if (resizingBottomLeft) hitboxBottomLeft.drawHitboxHit();
+        else hitboxBottomLeft.drawHitboxUnhit();
+        if (resizingBottomRight) hitboxBottomRight.drawHitboxHit();
+        else hitboxBottomRight.drawHitboxUnhit();
+    }
   }
   
   void drawBordersLocked() {
@@ -336,6 +410,10 @@ class WindowObject {
 
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
+      resizingTopLeft = false;
+      resizingTopRight = false;
+      resizingBottomLeft = false;
+      resizingBottomRight = false;
       clickedOnResizeBorder = true;
       resizing = true;
       widthOffset = mouseX-width;
@@ -350,6 +428,15 @@ class WindowObject {
         clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT ||
         clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT
       ) {
+        if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
+          resizingTopLeft = true;
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
+          resizingTopRight = true;
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
+          resizingBottomLeft = true;
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
+          resizingBottomRight = true;
+        }
         xOffset = mouseX-x;
         yOffset = mouseY-y;
       }
@@ -397,17 +484,7 @@ class WindowObject {
         clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT
       ) {
         // add
-        if (
-          clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT ||
-          clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT
-        ) {
-          previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
-          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-          else previewWidth = previewWidth_;
-          previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
-          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-          else previewHeight = previewHeight_;
-        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+        if (clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
           previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
           if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
           else previewWidth = previewWidth_;
@@ -417,6 +494,7 @@ class WindowObject {
           else previewHeight = previewHeight_;
         }
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
+        resizingTopLeft = true;
         previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
         if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
         if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
@@ -426,6 +504,7 @@ class WindowObject {
         if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
         else previewHeight = previewHeight_;
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
+        resizingTopRight = true;
         previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
         if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
         else previewWidth = previewWidth_;
@@ -434,6 +513,7 @@ class WindowObject {
         if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
         else previewHeight = previewHeight_;
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
+        resizingBottomLeft = true;
         previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
         if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
         if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
@@ -442,12 +522,14 @@ class WindowObject {
         if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
         else previewHeight = previewHeight_;
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
+        resizingBottomRight = true;
         previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
         if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
         else previewWidth = previewWidth_;
         previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
         if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-        else previewHeight = previewHeight_;      }
+        else previewHeight = previewHeight_;
+      }
     } else if(clickedOnBorder && locked && draggable) {
       x = mouseX-xOffset;
       y = mouseY-yOffset;
@@ -481,6 +563,10 @@ class WindowObject {
           clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT ||
           clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT
         ) {
+          resizingTopLeft = false;
+          resizingTopRight = false;
+          resizingBottomLeft = false;
+          resizingBottomRight = false;
           width = previewWidth;
           window.width = width-borderLeft-borderRight-2;
           height = previewHeight;
