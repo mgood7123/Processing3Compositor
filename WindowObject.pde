@@ -125,27 +125,32 @@ class WindowObject {
 
     Hitbox(int x, int y, int size) {
       // 0, 1, [2], 3, 4
-      int sr = roundToNearestMultiple(size, 3)/2;
-      this.size = sr;
+      //int sr = roundToNearestMultiple(size, 3)/2;
+      //this.size = sr;
       int s = size/2;
-      int x1 = x-s, y1 = y-s, x2 = x+size, y2 = y+size;
+      int x1 = x-s;
+      int y1 = y-s;
+      int x2 = x+size;
+      int y2 = y+size;
       hitbox = new RectangleCorners(x1, y1, x2, y2);
       drawHitbox();
     }
     
-    boolean mouseIsInHitbox() {
-      int x1 = hitbox.topLeftX;
-      int y1 = hitbox.topLeftY;
-      int x2 = hitbox.bottomRightX;
-      int y2 = hitbox.bottomRightY;
+    boolean mouseIsInHitbox(int offsetX, int offsetY) {
+      int x1 = hitbox.topLeftX+offsetX;
+      int y1 = hitbox.topLeftY+offsetY;
+      int x2 = hitbox.bottomRightX+offsetX;
+      int y2 = hitbox.bottomRightY+offsetY;
       boolean r1 = mouseX > x1;
       boolean r3 = mouseY > y1;
       boolean r2 = mouseX < x2;
       boolean r4 = mouseY < y2;
       hit = r1 && r2 && r2 && r3 && r4;
-      println("x1 = " + x1 + ", y1 = " + y1 + ", x2 = " + x2 + ", y2 = " + y2);
-      println("hit = " + hit);
       return hit;
+    }
+    
+    boolean mouseIsInHitbox() {
+      return mouseIsInHitbox(0,0);
     }
   }
   
@@ -198,25 +203,17 @@ class WindowObject {
     clickedResizeType = MOUSE_CLICKED_NOTHING;
     
     if (!resizable) return;
-    
-    RectangleCorners rc = new RectangleCorners(x, y, width+x, height+y);
-    
-    int cr = 50;
-    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr);
-    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr);
-    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr);
-    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr);
-    
+        
     if (mouseIsInWindow() && !mouseIsInApp()) {
-      if (hitboxTopLeft.mouseIsInHitbox()) {
+      if (hitboxTopLeft.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_LEFT;
-      } else if (hitboxBottomLeft.mouseIsInHitbox()) {
+      } else if (hitboxBottomLeft.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_LEFT;
       } else if (mouseX <= x+resizeLeft) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_LEFT;
-      } else if (hitboxTopRight.mouseIsInHitbox()) {
+      } else if (hitboxTopRight.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_RIGHT;
-      } else if (hitboxBottomRight.mouseIsInHitbox()) {
+      } else if (hitboxBottomRight.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT;
       } else if (mouseX >= (width+x)-resizeRight-1) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_RIGHT;
