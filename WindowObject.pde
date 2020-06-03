@@ -1,3 +1,9 @@
+// X11 provides an extremely basic programmatic WM
+// if none is present, and the WM provides a
+// user-interactable WM that effectively replaces
+// and enhances X's built-in WM
+// the enhanced WM calls X's built-in WM
+
 class WindowObject {
   public PGraphics graphics;
   Window window;
@@ -11,6 +17,8 @@ class WindowObject {
   int width;
   int previewHeight;
   int previewWidth;
+  int previewWidth_;
+  int previewHeight_;
   int x;
   int y;
   
@@ -22,6 +30,60 @@ class WindowObject {
   boolean draggable = true;
   boolean resizable = true;
 
+  void windowBeginMove(int _x, int _y) {
+    xOffset = _x - x;
+    yOffset = _y - y;
+  }
+  
+  void windowMove(int _x, int _y) {
+    x = _x - xOffset;
+    y = _y - yOffset;
+  }
+  
+  void windowBeginResize(int _x, int _y) {
+    originalWidth = width;
+    originalHeight = height;
+    widthOffset = _x - width;
+    heightOffset = _y - height;
+  }
+  
+  void windowResizeLeft(int _x) {
+    previewWidth_ = originalWidth - ((_x-widthOffset) - originalWidth);
+    if (previewWidth_ > minimumWidth) {
+      windowMove(_x, y);
+    }
+    if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+    else previewWidth = previewWidth_;
+  }
+  
+  void windowResizeRight(int _x) {
+    previewWidth_ = originalWidth + ((_x-widthOffset) - originalWidth);
+    if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
+    else previewWidth = previewWidth_;
+  }
+  
+  void windowResizeTop(int _y) {
+    previewHeight_ = originalHeight - ((_y-heightOffset) - originalHeight);
+    if (previewHeight_ > minimumHeight) {
+      windowMove(x, _y);
+    }
+    if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+    else previewHeight = previewHeight_;
+  }
+  
+  void windowResizeBottom(int _y) {
+    previewHeight_ = originalHeight + ((_y-heightOffset) - originalHeight);
+    if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
+    else previewHeight = previewHeight_;
+  }
+
+  void windowResize(int _width, int _height) {
+    width = _width;
+    window.width = width-borderLeft-borderRight-2;
+    height = _height;
+    window.height = height-borderTop-borderBottom-2;
+  }
+  
   boolean clickedOnResizeBorder = false;
   boolean clickedOnBorder = false;
   boolean clickedOnApp = false;
@@ -416,10 +478,7 @@ class WindowObject {
       resizingBottomRight = false;
       clickedOnResizeBorder = true;
       resizing = true;
-      widthOffset = mouseX-width;
-      heightOffset = mouseY-height;
-      originalWidth = width;
-      originalHeight = height;
+      windowBeginResize(mouseX, mouseY);
       mouseDragType = MOUSE_CLICKED_NOTHING;
       println("clickedResizeType = " + clickedResizeType);
       if (
@@ -430,14 +489,12 @@ class WindowObject {
       ) {
         if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
           resizingTopLeft = true;
-          xOffset = mouseX-x;
-          yOffset = mouseY-y;
+          windowBeginMove(mouseX, mouseY);
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
           resizingTopRight = true;
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
           resizingBottomLeft = true;
-          xOffset = mouseX-x;
-          yOffset = mouseY-y;
+          windowBeginMove(mouseX, mouseY);
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
           resizingBottomRight = true;
         }
@@ -446,10 +503,7 @@ class WindowObject {
       clickedOnBorder = true;
       locked = true;
       mouseDragType = MOUSE_CLICKED_NOTHING;
-      if (draggable) {
-        xOffset = mouseX-x;
-        yOffset = mouseY-y;
-      }
+      if (draggable) windowBeginMove(mouseX, mouseY);
     } else {
       clickedOnApp = true;
       correctMouseLocation();
@@ -462,81 +516,44 @@ class WindowObject {
     
   void mouseDragged() {
     if(clickedOnResizeBorder && resizing) {
-      int previewWidth_ = 0;
-      int previewHeight_ = 0;
       mouseDragType = getMouseDragDirection();
       if (
         clickedResizeType == MOUSE_CLICKED_RESIZE_TOP ||
         clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT
       ) {
-        // subtract
         if (clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT) {
-          previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
-          if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
-          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-          else previewWidth = previewWidth_;
+          windowResizeLeft(mouseX);
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP) {
-          previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
-          if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
-          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-          else previewHeight = previewHeight_;
+          windowResizeTop(mouseY);
         }
       } else if (
         clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM ||
         clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT
       ) {
-        // add
         if (clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
-          previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
-          if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-          else previewWidth = previewWidth_;
+          windowResizeRight(mouseX);
         } else if (resizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
-          previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
-          if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-          else previewHeight = previewHeight_;
+          windowResizeBottom(mouseY);
         }
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
         resizingTopLeft = true;
-        x = mouseX-xOffset;
-        y = mouseY-yOffset;
-        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
-        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-        else previewWidth = previewWidth_;
-        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
-        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
-        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-        else previewHeight = previewHeight_;
+        windowResizeLeft(mouseX);
+        windowResizeTop(mouseY);
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
         resizingTopRight = true;
-        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-        else previewWidth = previewWidth_;
-        previewHeight_ = originalHeight - ((mouseY-heightOffset) - originalHeight);
-        if (previewHeight_ > minimumHeight) y = mouseY-yOffset;
-        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-        else previewHeight = previewHeight_;
+        windowResizeRight(mouseX);
+        windowResizeTop(mouseY);
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
         resizingBottomLeft = true;
-        previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
-        if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
-        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-        else previewWidth = previewWidth_;
-        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
-        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-        else previewHeight = previewHeight_;
+        windowResizeLeft(mouseX);
+        windowResizeBottom(mouseY);
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
         resizingBottomRight = true;
-        previewWidth_ = originalWidth + ((mouseX-widthOffset) - originalWidth);
-        if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;
-        else previewWidth = previewWidth_;
-        previewHeight_ = originalHeight + ((mouseY-heightOffset) - originalHeight);
-        if (previewHeight_ <= minimumHeight) previewHeight = minimumHeight;
-        else previewHeight = previewHeight_;
+        windowResizeRight(mouseX);
+        windowResizeBottom(mouseY);
       }
     } else if(clickedOnBorder && locked && draggable) {
-      x = mouseX-xOffset;
-      y = mouseY-yOffset;
+      windowMove(mouseX, mouseY);
     } else {
       if (clickedOnApp) {
         correctMouseLocation();
@@ -553,14 +570,12 @@ class WindowObject {
           clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT ||
           clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT
         ) {
-          width = previewWidth;
-          window.width = width-borderLeft-borderRight-2;
+          windowResize(previewWidth, height);
         } else if (
           clickedResizeType == MOUSE_CLICKED_RESIZE_TOP ||
           clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM
         ) {
-          height = previewHeight;
-          window.height = height-borderTop-borderBottom-2;
+          windowResize(width, previewHeight);
         } else if (
           clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT ||
           clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT ||
@@ -571,10 +586,7 @@ class WindowObject {
           resizingTopRight = false;
           resizingBottomLeft = false;
           resizingBottomRight = false;
-          width = previewWidth;
-          window.width = width-borderLeft-borderRight-2;
-          height = previewHeight;
-          window.height = height-borderTop-borderBottom-2;
+          windowResize(previewWidth, previewHeight);
         }
         resizeWindow();
         graphics = createGraphics(width, height, P3D);
