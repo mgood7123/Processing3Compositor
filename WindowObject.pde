@@ -430,15 +430,17 @@ class WindowObject {
       ) {
         if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
           resizingTopLeft = true;
+          xOffset = mouseX-x;
+          yOffset = mouseY-y;
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT) {
           resizingTopRight = true;
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
           resizingBottomLeft = true;
+          xOffset = mouseX-x;
+          yOffset = mouseY-y;
         } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
           resizingBottomRight = true;
         }
-        xOffset = mouseX-x;
-        yOffset = mouseY-y;
       }
     } else if (mouseIsInBorder()) {
       clickedOnBorder = true;
@@ -495,6 +497,8 @@ class WindowObject {
         }
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
         resizingTopLeft = true;
+        x = mouseX-xOffset;
+        y = mouseY-yOffset;
         previewWidth_ = originalWidth - ((mouseX-widthOffset) - originalWidth);
         if (previewWidth_ > minimumWidth) x = mouseX-xOffset;
         if (previewWidth_ <= minimumWidth) previewWidth = minimumWidth;

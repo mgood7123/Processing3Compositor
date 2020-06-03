@@ -11,9 +11,11 @@ class Applications_DraggableExample extends Window {
   @Override
   void setup() {
     graphics.beginDraw();
+    // if this is called after a resize then
+    // the user will lose the current position of the box after a resize
     bx = width/2.0;
     by = height/2.0;
-    graphics.rectMode(RADIUS);  
+    // move rectMode into draw as PGraphics recreation seems to reset rectMode
     graphics.endDraw();
   }
   
@@ -21,6 +23,14 @@ class Applications_DraggableExample extends Window {
   void draw() { 
     graphics.beginDraw();
     graphics.background(0);
+    // reset rectMode here
+    graphics.rectMode(RADIUS);
+    
+    // we risk loosing the box entirely if the user resizes the graphics object
+    // to less than bx, by
+    // if this happens the user will need to resize the graphics object
+    // move the box to a suitible location
+    // then resize the graphics object again
     
     // Test if the cursor is over the box 
     if (mouseX > bx-boxSizeX && mouseX < bx+boxSizeX && 
