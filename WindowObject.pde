@@ -431,79 +431,143 @@ class WindowObject {
       if (!resizing) {
         if (mouseIsInWindow() && !mouseIsInApp()) {
           if (mouseX <= x+resizeLeft) {
-            // cursor can be in top left or bottom left
             if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
               hitboxTopLeft.drawHitboxMaybeHit();
+              hitboxTopRight.drawHitboxUnhit();
               hitboxBottomLeft.drawHitboxUnhit();
-            } else {
-              hitboxTopLeft.drawHitboxUnhit();
-              if (hitboxBottomLeft.mouseIsInHitbox(x,y)) hitboxBottomLeft.drawHitboxMaybeHit();
-              else {
-                hitboxBottomLeft.drawHitboxUnhit();
-                drawResizeZoneLeftMaybeHit();
-              }
-            }
-          } else {
-            hitboxTopLeft.drawHitboxUnhit();
-            hitboxBottomLeft.drawHitboxUnhit();
-            drawResizeZoneLeftUnhit();
-          }
-
-          if (mouseY <= y+resizeTop) {
-            // cursor can be in top left or top right
-            if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
-              hitboxTopLeft.drawHitboxMaybeHit();
-              hitboxTopRight.drawHitboxUnhit();
-            } else {
-              hitboxTopLeft.drawHitboxUnhit();
-              if (hitboxTopRight.mouseIsInHitbox(x,y)) hitboxTopRight.drawHitboxMaybeHit();
-              else {
-                hitboxTopRight.drawHitboxUnhit();
-                drawResizeZoneTopMaybeHit();
-              }
-            }
-          } else {
-            hitboxTopLeft.drawHitboxUnhit();
-            hitboxTopRight.drawHitboxUnhit();
-            drawResizeZoneTopUnhit();
-          }
-          
-          if (mouseX >= (width+x)-resizeRight) {
-            // cursor can be in top right or bottom right
-            if (hitboxTopRight.mouseIsInHitbox(x,y)) {
-              hitboxTopRight.drawHitboxMaybeHit();
               hitboxBottomRight.drawHitboxUnhit();
-            } else {
+            } else if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
               hitboxTopRight.drawHitboxUnhit();
-              if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
-              else {
-                hitboxBottomRight.drawHitboxUnhit();
-                drawResizeZoneRightMaybeHit();
-              }
-            }
-          } else {
-            hitboxTopRight.drawHitboxUnhit();
-            hitboxBottomRight.drawHitboxUnhit();
-            drawResizeZoneRightUnhit();
-          }
-          
-          if (mouseY >= (height+y)-resizeBottom) {
-            // cursor can be in bottom left or bottom right
-            if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
               hitboxBottomLeft.drawHitboxMaybeHit();
               hitboxBottomRight.drawHitboxUnhit();
             } else {
+              drawResizeZoneLeftMaybeHit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
               hitboxBottomLeft.drawHitboxUnhit();
-              if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
-              else {
-                hitboxBottomRight.drawHitboxUnhit();
-                drawResizeZoneBottomMaybeHit();
-              }
+              hitboxBottomRight.drawHitboxUnhit();
+            }
+          } else if (mouseY <= y+resizeTop) {
+            if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxMaybeHit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else if (hitboxTopRight.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxMaybeHit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopMaybeHit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
+            }
+          } else if (mouseX >= (width+x)-resizeRight) {
+            if (hitboxTopRight.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxMaybeHit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else if (hitboxBottomRight.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxMaybeHit();
+            } else {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightMaybeHit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
+            }
+          } else if (mouseY >= (height+y)-resizeBottom) {
+            if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxMaybeHit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else if (hitboxBottomRight.mouseIsInHitbox(x,y)) {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomUnhit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxMaybeHit();
+            } else {
+              drawResizeZoneLeftUnhit();
+              drawResizeZoneTopUnhit();
+              drawResizeZoneRightUnhit();
+              drawResizeZoneBottomMaybeHit();
+              
+              hitboxTopLeft.drawHitboxUnhit();
+              hitboxTopRight.drawHitboxUnhit();
+              hitboxBottomLeft.drawHitboxUnhit();
+              hitboxBottomRight.drawHitboxUnhit();
             }
           } else {
+            drawResizeZoneLeftUnhit();
+            drawResizeZoneTopUnhit();
+            drawResizeZoneRightUnhit();
+            drawResizeZoneBottomUnhit();
+            
+            hitboxTopLeft.drawHitboxUnhit();
+            hitboxTopRight.drawHitboxUnhit();
             hitboxBottomLeft.drawHitboxUnhit();
             hitboxBottomRight.drawHitboxUnhit();
-            drawResizeZoneBottomUnhit();
           }
         } else {
           drawResizeZoneLeftUnhit();
