@@ -102,9 +102,9 @@ class WindowObject {
 
   void windowResize(int _width, int _height) {
     width = _width;
-    window.width = width-borderLeft-borderRight-2;
+    window.width = width-borderLeft-borderRight;
     height = _height;
-    window.height = height-borderTop-borderBottom-2;
+    window.height = height-borderTop-borderBottom;
   }
   
   boolean clickedOnResizeBorder = false;
@@ -143,17 +143,16 @@ class WindowObject {
   void attach(Window window) {
     this.window = window;
     
-    this.window.x = borderLeft+1;
-    this.window.width = width-borderLeft-borderRight-2;
+    this.window.x = borderLeft;
+    this.window.width = width-borderLeft-borderRight;
 
-    this.window.y = borderTop+1;
-    this.window.height = height-borderTop-borderBottom-2;
+    this.window.y = borderTop;
+    this.window.height = height-borderTop-borderBottom;
   }
   
   void correctMouseLocation() {
-    // is -1 and -2 correct for MacOS mouse pointer?
-    window.mouseX = mouseX-x-window.x-1;
-    window.mouseY = mouseY-y-window.y-2;
+    window.mouseX = mouseX-x-window.x;
+    window.mouseY = mouseY-y-window.y;
   }
 
   boolean mouseIsInWindow() {
@@ -269,11 +268,11 @@ class WindowObject {
     if (mouseIsInWindow() && !mouseIsInApp()) {
       if (mouseX <= x+borderLeft) {
         clickedBorderType = MOUSE_CLICKED_BORDER_LEFT;
-      } else if (mouseX >= (width+x)-borderRight-1) {
+      } else if (mouseX >= (width+x)-borderRight) {
         clickedBorderType = MOUSE_CLICKED_BORDER_RIGHT;
       } else if (mouseY <= y+borderTop) {
         clickedBorderType = MOUSE_CLICKED_BORDER_TOP;
-      } else if (mouseY >= (height+y)-borderBottom-2) {
+      } else if (mouseY >= (height+y)-borderBottom) {
         clickedBorderType = MOUSE_CLICKED_BORDER_BOTTOM;
       }
     }
@@ -300,11 +299,11 @@ class WindowObject {
         clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_RIGHT;
       } else if (hitboxBottomRight.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT;
-      } else if (mouseX >= (width+x)-resizeRight-1) {
+      } else if (mouseX >= (width+x)-resizeRight) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_RIGHT;
       } else if (mouseY <= y+resizeTop) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_TOP;
-      } else if (mouseY >= (height+y)-resizeBottom-2) {
+      } else if (mouseY >= (height+y)-resizeBottom) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM;
       }
     }
@@ -431,30 +430,81 @@ class WindowObject {
     if (debug) {
       if (!resizing) {
         if (mouseIsInWindow() && !mouseIsInApp()) {
-          if (mouseX <= x+resizeLeft) drawResizeZoneLeftMaybeHit();
-          else drawResizeZoneLeftUnhit();
+          if (mouseX <= x+resizeLeft) {
+            // cursor can be in top left or bottom left
+            if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
+              hitboxTopLeft.drawHitboxMaybeHit();
+              hitboxBottomLeft.drawHitboxUnhit();
+            } else {
+              hitboxTopLeft.drawHitboxUnhit();
+              if (hitboxBottomLeft.mouseIsInHitbox(x,y)) hitboxBottomLeft.drawHitboxMaybeHit();
+              else {
+                hitboxBottomLeft.drawHitboxUnhit();
+                drawResizeZoneLeftMaybeHit();
+              }
+            }
+          } else {
+            hitboxTopLeft.drawHitboxUnhit();
+            hitboxBottomLeft.drawHitboxUnhit();
+            drawResizeZoneLeftUnhit();
+          }
+
+          if (mouseY <= y+resizeTop) {
+            // cursor can be in top left or top right
+            if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
+              hitboxTopLeft.drawHitboxMaybeHit();
+              hitboxTopRight.drawHitboxUnhit();
+            } else {
+              hitboxTopLeft.drawHitboxUnhit();
+              if (hitboxTopRight.mouseIsInHitbox(x,y)) hitboxTopRight.drawHitboxMaybeHit();
+              else {
+                hitboxTopRight.drawHitboxUnhit();
+                drawResizeZoneTopMaybeHit();
+              }
+            }
+          } else {
+            hitboxTopLeft.drawHitboxUnhit();
+            hitboxTopRight.drawHitboxUnhit();
+            drawResizeZoneTopUnhit();
+          }
           
-          if (mouseY <= y+resizeTop) drawResizeZoneTopMaybeHit();
-          else drawResizeZoneTopUnhit();
+          if (mouseX >= (width+x)-resizeRight) {
+            // cursor can be in top right or bottom right
+            if (hitboxTopRight.mouseIsInHitbox(x,y)) {
+              hitboxTopRight.drawHitboxMaybeHit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else {
+              hitboxTopRight.drawHitboxUnhit();
+              if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
+              else {
+                hitboxBottomRight.drawHitboxUnhit();
+                drawResizeZoneRightMaybeHit();
+              }
+            }
+          } else {
+            hitboxTopRight.drawHitboxUnhit();
+            hitboxBottomRight.drawHitboxUnhit();
+            drawResizeZoneRightUnhit();
+          }
           
-          if (mouseX >= (width+x)-resizeRight-1) drawResizeZoneRightMaybeHit();
-          else drawResizeZoneRightUnhit();
-          
-          if (mouseY >= (height+y)-resizeBottom-2) drawResizeZoneBottomMaybeHit();
-          else drawResizeZoneBottomUnhit();
-          
-          if (hitboxTopLeft.mouseIsInHitbox(x,y)) hitboxTopLeft.drawHitboxMaybeHit();
-          else hitboxTopLeft.drawHitboxUnhit();
-          
-          if (hitboxTopRight.mouseIsInHitbox(x,y)) hitboxTopRight.drawHitboxMaybeHit();
-          else hitboxTopRight.drawHitboxUnhit();
-          
-          if (hitboxBottomLeft.mouseIsInHitbox(x,y)) hitboxBottomLeft.drawHitboxMaybeHit();
-          else hitboxBottomLeft.drawHitboxUnhit();
-          
-          if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
-          else hitboxBottomRight.drawHitboxUnhit();
-          
+          if (mouseY >= (height+y)-resizeBottom) {
+            // cursor can be in bottom left or bottom right
+            if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
+              hitboxBottomLeft.drawHitboxMaybeHit();
+              hitboxBottomRight.drawHitboxUnhit();
+            } else {
+              hitboxBottomLeft.drawHitboxUnhit();
+              if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
+              else {
+                hitboxBottomRight.drawHitboxUnhit();
+                drawResizeZoneBottomMaybeHit();
+              }
+            }
+          } else {
+            hitboxBottomLeft.drawHitboxUnhit();
+            hitboxBottomRight.drawHitboxUnhit();
+            drawResizeZoneBottomUnhit();
+          }
         } else {
           drawResizeZoneLeftUnhit();
           drawResizeZoneTopUnhit();
