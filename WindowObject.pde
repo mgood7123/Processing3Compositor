@@ -11,7 +11,6 @@
 // pixels themselves. there is also input, and
 // inter-client activities like copy&paste
 
-
 class WindowObject {
   public PGraphics graphics;
   Window window;
@@ -121,7 +120,7 @@ class WindowObject {
   int widthOffset = 0;
   int heightOffset = 0;
 
-  int resizeTop = 3;
+  int resizeTop = 6;
   int resizeLeft = 3;
   int resizeBottom = 3;
   int resizeRight = 3;
@@ -211,21 +210,8 @@ class WindowObject {
     void drawHitboxHit() {
       drawHitbox(0, 255, 0);
     }
-
-    private int roundToNearestMultiple(int x, int n) {
-      int mod = x % n;
-      if(mod >= (float) n / 2) {
-        x += (n-mod);
-      } else {
-        x -= mod;
-      }
-      return x;
-    }
-
     Hitbox(int x, int y, int size, boolean debug_) {
       debug = debug_;
-      // 0, 1, [2], 3, 4
-      //int sr = roundToNearestMultiple(size, 3)/2;
       int s = size/2;
       this.size = s;
       int x1 = x-s;
@@ -233,13 +219,6 @@ class WindowObject {
       int x2 = x+s;
       int y2 = y+s;
       hitbox = new RectangleCorners(x1, y1, x2, y2);
-    }
-    
-    void draw(int offsetX, int offsetY) {
-      if (debug) {
-        if (mouseIsInHitbox(offsetX, offsetY)) drawHitboxHit();
-        else drawHitboxUnhit();
-      }
     }
     
     boolean mouseIsInHitbox(int offsetX, int offsetY) {
@@ -343,12 +322,98 @@ class WindowObject {
     graphics.endDraw();
   }
   
+  boolean resizingLeft = false;
+  boolean resizingTop = false;
+  boolean resizingRight = false;
+  boolean resizingBottom = false;
   boolean resizingTopLeft = false;
   boolean resizingTopRight = false;
   boolean resizingBottomLeft = false;
   boolean resizingBottomRight = false;
-        //  if (resizingTopLeft) hitboxTopLeft.drawHitboxHit();
-        //else hitboxTopLeft.drawHitboxMaybeHit();
+  
+  void drawResizeZoneLeft(int red, int green, int blue) {
+    graphics.beginDraw();
+    graphics.rectMode(CORNER);
+    graphics.stroke(0);
+    graphics.fill(red, green, blue);
+    graphics.rect(0, 0, resizeLeft, height);
+    graphics.endDraw();
+  }
+
+  void drawResizeZoneTop(int red, int green, int blue) {
+    graphics.beginDraw();
+    graphics.rectMode(CORNER);
+    graphics.stroke(0);
+    graphics.fill(red, green, blue);
+    graphics.rect(0, 0, width, resizeTop);
+    graphics.endDraw();
+  }
+
+  void drawResizeZoneRight(int red, int green, int blue) {
+    graphics.beginDraw();
+    graphics.rectMode(CORNER);
+    graphics.stroke(0);
+    graphics.fill(red, green, blue);
+    graphics.rect(width-resizeRight, 0, resizeRight, height);
+    graphics.endDraw();
+  }
+
+  void drawResizeZoneBottom(int red, int green, int blue) {
+    graphics.beginDraw();
+    graphics.rectMode(CORNER);
+    graphics.stroke(0);
+    graphics.fill(red, green, blue);
+    graphics.rect(0, height-resizeBottom, width, resizeBottom);
+    graphics.endDraw();
+  }
+  
+  void drawResizeZoneLeftHit() {
+    drawResizeZoneLeft(0, 255, 0);
+  }
+
+  void drawResizeZoneTopHit() {
+    drawResizeZoneTop(0, 255, 0);
+  }
+
+  void drawResizeZoneRightHit() {
+    drawResizeZoneRight(0, 255, 0);
+  }
+
+  void drawResizeZoneBottomHit() {
+    drawResizeZoneBottom(0, 255, 0);
+  }
+
+  void drawResizeZoneLeftMaybeHit() {
+    drawResizeZoneLeft(128, 128, 0);
+  }
+
+  void drawResizeZoneTopMaybeHit() {
+    drawResizeZoneTop(128, 128, 0);
+  }
+
+  void drawResizeZoneRightMaybeHit() {
+    drawResizeZoneRight(128, 128, 0);
+  }
+
+  void drawResizeZoneBottomMaybeHit() {
+    drawResizeZoneBottom(128, 128, 0);
+  }
+
+  void drawResizeZoneLeftUnhit() {
+    drawResizeZoneLeft(255, 0, 0);
+  }
+
+  void drawResizeZoneTopUnhit() {
+    drawResizeZoneTop(255, 0, 0);
+  }
+
+  void drawResizeZoneRightUnhit() {
+    drawResizeZoneRight(255, 0, 0);
+  }
+
+  void drawResizeZoneBottomUnhit() {
+    drawResizeZoneBottom(255, 0, 0);
+  }
 
   void drawBordersWithFill(int fill__) {
     graphics.beginDraw();
@@ -363,50 +428,63 @@ class WindowObject {
     hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr,debug);
     hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr,debug);
     hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr,debug);
-
-    if (!resizing) {
-      if (mouseIsInWindow() && !mouseIsInApp()) {
-        if (hitboxTopLeft.mouseIsInHitbox(x,y)) {
-          hitboxTopLeft.drawHitboxMaybeHit();
-          hitboxTopRight.drawHitboxUnhit();
-          hitboxBottomLeft.drawHitboxUnhit();
-          hitboxBottomRight.drawHitboxUnhit();
-        } else if (hitboxTopRight.mouseIsInHitbox(x,y)) {
-          hitboxTopLeft.drawHitboxUnhit();
-          hitboxTopRight.drawHitboxMaybeHit();
-          hitboxBottomLeft.drawHitboxUnhit();
-          hitboxBottomRight.drawHitboxUnhit();
-        } else if (hitboxBottomLeft.mouseIsInHitbox(x,y)) {
-          hitboxTopLeft.drawHitboxUnhit();
-          hitboxTopRight.drawHitboxUnhit();
-          hitboxBottomLeft.drawHitboxMaybeHit();
-          hitboxBottomRight.drawHitboxUnhit();
-        } else if (hitboxBottomRight.mouseIsInHitbox(x,y)) {
-          hitboxTopLeft.drawHitboxUnhit();
-          hitboxTopRight.drawHitboxUnhit();
-          hitboxBottomLeft.drawHitboxUnhit();
-          hitboxBottomRight.drawHitboxMaybeHit();
+    if (debug) {
+      if (!resizing) {
+        if (mouseIsInWindow() && !mouseIsInApp()) {
+          if (mouseX <= x+resizeLeft) drawResizeZoneLeftMaybeHit();
+          else drawResizeZoneLeftUnhit();
+          
+          if (mouseY <= y+resizeTop) drawResizeZoneTopMaybeHit();
+          else drawResizeZoneTopUnhit();
+          
+          if (mouseX >= (width+x)-resizeRight-1) drawResizeZoneRightMaybeHit();
+          else drawResizeZoneRightUnhit();
+          
+          if (mouseY >= (height+y)-resizeBottom-2) drawResizeZoneBottomMaybeHit();
+          else drawResizeZoneBottomUnhit();
+          
+          if (hitboxTopLeft.mouseIsInHitbox(x,y)) hitboxTopLeft.drawHitboxMaybeHit();
+          else hitboxTopLeft.drawHitboxUnhit();
+          
+          if (hitboxTopRight.mouseIsInHitbox(x,y)) hitboxTopRight.drawHitboxMaybeHit();
+          else hitboxTopRight.drawHitboxUnhit();
+          
+          if (hitboxBottomLeft.mouseIsInHitbox(x,y)) hitboxBottomLeft.drawHitboxMaybeHit();
+          else hitboxBottomLeft.drawHitboxUnhit();
+          
+          if (hitboxBottomRight.mouseIsInHitbox(x,y)) hitboxBottomRight.drawHitboxMaybeHit();
+          else hitboxBottomRight.drawHitboxUnhit();
+          
         } else {
+          drawResizeZoneLeftUnhit();
+          drawResizeZoneTopUnhit();
+          drawResizeZoneRightUnhit();
+          drawResizeZoneBottomUnhit();
+          
           hitboxTopLeft.drawHitboxUnhit();
           hitboxTopRight.drawHitboxUnhit();
           hitboxBottomLeft.drawHitboxUnhit();
           hitboxBottomRight.drawHitboxUnhit();
         }
       } else {
-        hitboxTopLeft.drawHitboxUnhit();
-        hitboxTopRight.drawHitboxUnhit();
-        hitboxBottomLeft.drawHitboxUnhit();
-        hitboxBottomRight.drawHitboxUnhit();
+          if (resizingLeft) drawResizeZoneLeftHit();
+          else drawResizeZoneLeftUnhit();
+          if (resizingTop) drawResizeZoneTopHit();
+          else drawResizeZoneTopUnhit();
+          if (resizingRight) drawResizeZoneRightHit();
+          else drawResizeZoneRightUnhit();
+          if (resizingBottom) drawResizeZoneBottomHit();
+          else drawResizeZoneBottomUnhit();
+          
+          if (resizingTopLeft) hitboxTopLeft.drawHitboxHit();
+          else hitboxTopLeft.drawHitboxUnhit();
+          if (resizingTopRight) hitboxTopRight.drawHitboxHit();
+          else hitboxTopRight.drawHitboxUnhit();
+          if (resizingBottomLeft) hitboxBottomLeft.drawHitboxHit();
+          else hitboxBottomLeft.drawHitboxUnhit();
+          if (resizingBottomRight) hitboxBottomRight.drawHitboxHit();
+          else hitboxBottomRight.drawHitboxUnhit();
       }
-    } else {
-        if (resizingTopLeft) hitboxTopLeft.drawHitboxHit();
-        else hitboxTopLeft.drawHitboxUnhit();
-        if (resizingTopRight) hitboxTopRight.drawHitboxHit();
-        else hitboxTopRight.drawHitboxUnhit();
-        if (resizingBottomLeft) hitboxBottomLeft.drawHitboxHit();
-        else hitboxBottomLeft.drawHitboxUnhit();
-        if (resizingBottomRight) hitboxBottomRight.drawHitboxHit();
-        else hitboxBottomRight.drawHitboxUnhit();
     }
   }
   
@@ -497,6 +575,10 @@ class WindowObject {
 
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
+      resizingLeft = false;
+      resizingTop = false;
+      resizingRight = false;
+      resizingBottom = false;
       resizingTopLeft = false;
       resizingTopRight = false;
       resizingBottomLeft = false;
@@ -507,14 +589,17 @@ class WindowObject {
       mouseDragType = MOUSE_CLICKED_NOTHING;
       println("clickedResizeType = " + clickedResizeType);
       if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP) {
+        resizingTop = true;
         // window can only be moved vertically
         windowBeginMoveY(mouseY);
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT) {
+        resizingLeft = true;
         // window can be moved horizontally
         windowBeginMoveX(mouseX);
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+        resizingRight = true;
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
-        resizingTopLeft = true;
+        resizingBottom = true;
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT) {
         resizingTopLeft = true;
         // window can be moved vertically or horizontally
@@ -603,18 +688,22 @@ class WindowObject {
           clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT ||
           clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT
         ) {
-          resizingTopLeft = false;
-          resizingTopRight = false;
-          resizingBottomLeft = false;
-          resizingBottomRight = false;
           windowResize(previewWidth, previewHeight);
         }
         resizeWindow();
         graphics = createGraphics(width, height, P3D);
-        clickedResizeType = MOUSE_CLICKED_NOTHING;
       }
       clickedOnResizeBorder = false;
       resizing = false;
+      resizingLeft = false;
+      resizingTop = false;
+      resizingRight = false;
+      resizingBottom = false;
+      resizingTopLeft = false;
+      resizingTopRight = false;
+      resizingBottomLeft = false;
+      resizingBottomRight = false;
+      clickedResizeType = MOUSE_CLICKED_NOTHING;
     } else if (clickedOnBorder) {
       clickedOnBorder = false;
       locked = false;

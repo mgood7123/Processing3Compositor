@@ -21,7 +21,7 @@ void setup() {
 }
 
 void draw() {
-  compositor.draw(); //<>// //<>// //<>//
+  compositor.draw(); //<>//
 }
 
 void mousePressed() {

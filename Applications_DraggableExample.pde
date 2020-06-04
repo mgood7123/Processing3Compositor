@@ -7,6 +7,8 @@ class Applications_DraggableExample extends Window {
   boolean locked = false;
   float xOffset = 0.0;
   float yOffset = 0.0;
+  
+  // https://gitlab.freedesktop.org/wayland/weston/-/blob/master/clients/simple-egl.c#L358
     
   @Override
   void setup() {
