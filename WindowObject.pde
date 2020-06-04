@@ -501,6 +501,15 @@ class WindowObject {
   }
   
   void drawGraphics() {
+    if (displayFPS) {
+      window.graphics.beginDraw();
+      int oldColor = window.graphics.fillColor;
+      window.graphics.fill(255);
+      window.graphics.textSize(16);
+      window.graphics.text("FPS: " + frameRate, 10, 20);
+      window.graphics.fill(oldColor);
+      window.graphics.endDraw();
+    }
     graphics.beginDraw();
     graphics.image(
       window.graphics,
@@ -509,13 +518,6 @@ class WindowObject {
       window.width,
       window.height
     );
-    if (displayFPS) {
-      int oldColor = graphics.fillColor;
-      graphics.fill(255);
-      graphics.textSize(16);
-      graphics.text("FPS: " + frameRate, 10, borderTop+20);
-      graphics.fill(oldColor);
-    }
     graphics.endDraw();
   }
   

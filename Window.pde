@@ -1,5 +1,5 @@
 class Window {
-  public PGraphics graphics;
+  public PGraphics graphics = null;
   
   int height;
   int width;
