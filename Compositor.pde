@@ -70,7 +70,7 @@ class Compositor {
       // locate the top most window
       int topMostIndex = 0;
       
-      // assume last index is top most //<>// //<>// //<>//
+      // assume last index is top most //<>// //<>// //<>// //<>//
       topMostIndex = focusableWindows.size()-1;
 
       WindowObject target = focusableWindows.get(topMostIndex);
@@ -84,8 +84,11 @@ class Compositor {
   void drawGraphics() {
     if (displayFPS) {
       graphics.beginDraw();
+      int oldColor = graphics.fillColor;
+      graphics.fill(255);
       graphics.textSize(16);
       graphics.text("FPS: " + frameRate, 10, 20);
+      graphics.fill(oldColor);
       graphics.endDraw();
     }
     image(graphics, 0, 0);

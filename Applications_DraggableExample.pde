@@ -36,7 +36,7 @@ class Applications_DraggableExample extends Window {
     if (mouseX > bx-boxSizeX && mouseX < bx+boxSizeX && 
         mouseY > by-boxSizeY && mouseY < by+boxSizeY) {
       overBox = true;
-      if(!locked) { 
+      if(!locked) {
         graphics.stroke(255); 
         graphics.fill(153);
       } 
@@ -67,7 +67,7 @@ class Applications_DraggableExample extends Window {
   @Override
   void mouseDragged() {
     if(locked) {
-      bx = mouseX-xOffset; 
+      bx = mouseX-xOffset;
       by = mouseY-yOffset; 
     }
   }
