@@ -70,7 +70,7 @@ class Compositor {
       // locate the top most window
       int topMostIndex = 0;
       
-      // assume last index is top most //<>// //<>// //<>// //<>//
+      // assume last index is top most //<>// //<>// //<>// //<>// //<>// //<>//
       topMostIndex = focusableWindows.size()-1;
 
       WindowObject target = focusableWindows.get(topMostIndex);

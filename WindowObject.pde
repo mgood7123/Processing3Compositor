@@ -185,7 +185,6 @@ class WindowObject {
   
   class Hitbox {
     RectangleCorners hitbox;
-    int size = -1;
     boolean hit = false;
     boolean debug = false;
     
@@ -194,7 +193,7 @@ class WindowObject {
       graphics.rectMode(CORNER);
       graphics.stroke(0);
       graphics.fill(red, green, blue);
-      graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX+size, hitbox.bottomRightY+size);
+      graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX, hitbox.bottomRightY);
       graphics.endDraw();
     }
     
@@ -209,15 +208,20 @@ class WindowObject {
     void drawHitboxHit() {
       drawHitbox(0, 255, 0);
     }
+    
+    Hitbox(int x, int y, int _x, int _y, boolean debug_) {
+      debug = debug_;
+      hitbox = new RectangleCorners(x, y, _x, _y);
+    }
+
     Hitbox(int x, int y, int size, boolean debug_) {
       debug = debug_;
       int s = size/2;
-      this.size = s;
       int x1 = x-s;
       int y1 = y-s;
       int x2 = x+s;
       int y2 = y+s;
-      hitbox = new RectangleCorners(x1, y1, x2, y2);
+      hitbox = new RectangleCorners(x1, y1, x2+s, y2+s);
     }
     
     boolean mouseIsInHitbox(int offsetX, int offsetY) {
@@ -421,12 +425,11 @@ class WindowObject {
     graphics.fill(fill__);
     graphics.rect(0, 0, width, height, 10);
     graphics.endDraw();
-    int cr = 50;
-    RectangleCorners rc = new RectangleCorners(0, 0, width, height);
-    hitboxTopLeft = new Hitbox(rc.topLeftX,rc.topLeftY,cr,debug);
-    hitboxTopRight = new Hitbox(rc.topRightX,rc.topRightY,cr,debug);
-    hitboxBottomLeft = new Hitbox(rc.bottomLeftX,rc.bottomLeftY,cr,debug);
-    hitboxBottomRight = new Hitbox(rc.bottomRightX,rc.bottomRightY,cr,debug);
+    // w, h, w, h
+    hitboxTopLeft = new Hitbox(0, 0, resizeLeft, resizeTop, debug);
+    hitboxBottomLeft = new Hitbox(0, height-resizeBottom, resizeLeft, height, debug);
+    hitboxTopRight = new Hitbox(width-resizeRight, 0, width, resizeTop, debug);
+    hitboxBottomRight = new Hitbox(width-resizeRight, height-resizeBottom, width, height, debug);
     if (debug) {
       if (!resizing) {
         if (mouseIsInWindow() && !mouseIsInApp()) {
