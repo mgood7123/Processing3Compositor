@@ -70,7 +70,7 @@ class Compositor {
       // locate the top most window
       int topMostIndex = 0;
       
-      // assume last index is top most //<>// //<>// //<>// //<>// //<>// //<>//
+      // assume last index is top most //<>// //<>// //<>// //<>//
       topMostIndex = focusableWindows.size()-1;
 
       WindowObject target = focusableWindows.get(topMostIndex);
@@ -105,6 +105,9 @@ class Compositor {
   }
 
   void setup() {
+    //PImage img = loadImage("right_ptr", "png");
+    //img.resize(16, 16);
+    //cursor(img, 0, 0);
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
