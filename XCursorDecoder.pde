@@ -27,6 +27,30 @@ class XCursorDecoder {
       return x;
     }
     
+    int[] readIntBigEndian(byte[] bytes, int size, int offset) {
+      position += offset;
+      
+      int start = position;
+      int end = position+(size*4);
+      
+      int[] x = new int[size];
+      
+      for (int i = start; i < end; i+=4) {
+        x[i-start] = (
+                       (bytes[i+3] & 0xFF) << 0
+                     ) | (
+                       (bytes[i+2] & 0xFF) << 8
+                     ) | (
+                       (bytes[i+1] & 0xFF) << 16
+                     ) | (
+                       (bytes[i+0] & 0xFF) << 24
+                     );
+        position+=4;
+      }
+      
+      return x;
+    }
+    
     void seek(int position) {
       this.position = position;
     }
@@ -205,7 +229,7 @@ class XCursorDecoder {
       
     }
     
-    String toString() {
+    String toString(boolean printPixels) {
       String s;
       s = "        header:                 " + toHexString(header, 4);
       s = s + "\n        type =                  " + toHexString(type, 4) + " (" + (isImage ? "Image" : isComment ? "Comment" : "None") + ")";
@@ -217,9 +241,11 @@ class XCursorDecoder {
         s = s + "\n        xhot =                  " + toHexString(xhot, 4);
         s = s + "\n        yhot =                  " + toHexString(yhot, 4);
         s = s + "\n        delay =                 " + toHexString(delay, 4);
-        ByteDump bt = new ByteDump();
-        bt.groupSize = 8;
-        s = s + "\n        pixels =                " + bt.dump(pixels, new ByteTools().readInt(width, 1, 0)[0]*new ByteTools().readInt(height, 1, 0)[0], 4);
+        if (printPixels) {
+          ByteDump bt = new ByteDump();
+          bt.groupSize = 8;
+          s = s + "\n        pixels =                " + bt.dump(pixels, new ByteTools().readInt(width, 1, 0)[0]*new ByteTools().readInt(height, 1, 0)[0], 4);
+        }
       } else if (isComment) {
         s = s + "\n        length =                " + toHexString(length, 4);
         ByteDump bt = new ByteDump();
@@ -254,12 +280,12 @@ class XCursorDecoder {
       }
     }
     
-    String toString() {
+    String toString(boolean printPixels) {
       String s;
       s = "    type:                   " + toHexString(type, 4);
       s = s + "\n    subtype =               " + toHexString(subtype, 4);
       s = s + "\n    position =              " + toHexString(position, 4);
-      s = s + "\n    TOC chunk:\n" + chunk.toString();
+      s = s + "\n    TOC chunk:\n" + chunk.toString(printPixels);
       return s;
     }
 
@@ -290,38 +316,75 @@ class XCursorDecoder {
       return f[0] == 0x58 && f[1] == 0x63 && f[2] == 0x75 && f[3] == 0x72;
     }
     
-    String toString() {
+    String toString(boolean printPixels) {
       String s;
       s = "magic:                  " + toHexString(magic, 4);
       s = s + "\nheader =                " + toHexString(header, 4);
       s = s + "\nversion =               " + toHexString(version, 4);
       s = s + "\nntoc =                  " + toHexString(ntoc, 4);
       for (int i = 0; i < ntoc[0]; i++) {
-        s = s + "\ntoc " + i + ":\n" + toc[i].toString();
+        s = s + "\ntoc " + i + ":\n" + toc[i].toString(printPixels);
       }
       return s;
     }
     
   }
-
-  PImage decode(String file) {
-    File f = dataFile(file);
-    if (!f.exists()) {
-      println("error: " + file + " does not exist");
-      return null;
+  
+  PImage getImage(Header header, int index) {
+    int index_ = 0;
+    for (TOC toc : header.toc) {
+      TOC_chunk chunk = toc.chunk;
+      if (chunk.isImage) {
+        if (index == index_) {
+          println("image found");
+          int width = new ByteTools().readInt(chunk.width, 1, 0)[0];
+          int height = new ByteTools().readInt(chunk.height, 1, 0)[0];
+          PImage img = createImage(width, height, ARGB);
+          img.loadPixels();
+          for (int i = 0; i < img.pixels.length; i++) {
+            img.pixels[i] = new ByteTools().readInt(chunk.pixels[i], 1, 0)[0];
+          }
+          img.updatePixels();
+          return img;
+        } else {
+          index_++;
+        }
+      }
     }
-    byte[] byteFile = loadBytes(f);
-    Header header = new Header();
-    
+    return null;
+  }
+  
+  File f = null;
+  byte[] byteFile = null;
+  Header header = null;
+  
+  boolean load(String file) {
+    f = dataFile(file);
+    if (!f.exists()) {
+      f = null;
+      println("error: " + file + " does not exist");
+      return false;
+    }
+    byteFile = loadBytes(f);
+    header = new Header();
     if (header.isValid(byteFile)) {
       println(file + " is a valid XCursor");
       header.read(byteFile);
-      println(header.toString());
+      return true;
     } else {
+      header = null;
       println(file + " is an invalid XCursor");
       println("expected magic: 0x58, 0x63, 0x75, 0x72");
       println("got magic:      " + toHexString(byteFile, 4));
-    }   
-    return null;
+    }
+    return false;
+  }
+  
+  String info(boolean printPixels) {
+    return header != null ? header.toString(printPixels) : "";
+  }
+
+  PImage decode() {
+    return header != null ? getImage(header, 0) : null;
   }
 }

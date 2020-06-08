@@ -105,9 +105,11 @@ class Compositor {
   }
 
   void setup() {
-    //PImage img = loadImage("right_ptr", "png");
-    //img.resize(16, 16);
-    //cursor(img, 0, 0);
+    XCursorDecoder XCD = new XCursorDecoder();
+    if (XCD.load("cursors/aerodrop/right_ptr")) {
+      PImage image = XCD.decode();
+      if (image != null) cursor(image, 0, 0);
+    }
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
