@@ -282,7 +282,7 @@ class WindowObject {
     }
   }
   
-  boolean mouseIsInBorder() {
+  boolean mouseIsInDraggableBorder() {
     getClickedBorderType();
     return clickedBorderType != MOUSE_CLICKED_NOTHING;
   }
@@ -691,7 +691,7 @@ class WindowObject {
   int originalHeight;
   
   int resizeType;
-
+  
   void mousePressed() {
     if (mouseIsInResizeBorder()) {
       resizingLeft = false;
@@ -734,7 +734,8 @@ class WindowObject {
       } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
         resizingBottomRight = true;
       }
-    } else if (mouseIsInBorder()) {
+    } else if (mouseIsInDraggableBorder()) {
+      ct.loadCursor("cursors/aerodrop/fleur");
       clickedOnBorder = true;
       locked = true;
       mouseDragType = MOUSE_CLICKED_NOTHING;
@@ -824,6 +825,7 @@ class WindowObject {
       resizingBottomRight = false;
       clickedResizeType = MOUSE_CLICKED_NOTHING;
     } else if (clickedOnBorder) {
+      ct.loadCursor("cursors/aerodrop/4498f0e0c1937ffe01fd06f973665830");
       clickedOnBorder = false;
       locked = false;
     } else if (clickedOnApp) {
@@ -832,5 +834,39 @@ class WindowObject {
       window.mouseReleased();
     }
     drawWindow();
+  }
+  
+  CursorTools ct = new CursorTools();
+  
+  void mouseMoved() {
+    // if mouse is moved and is pressed
+    // then the mouse is currently being dragged
+    // otherwise it is being moved
+    
+    // TODO: BE SMARTER ABOUT OVERLAPPING WINDOW REGIONS
+    
+    
+    if (mouseIsInWindow()) {
+      if (mouseIsInApp()) {
+        ct.loadCursor("cursors/aerodrop/right_ptr");
+      } else if (mouseIsInResizeBorder()) {
+        if (clickedResizeType == MOUSE_CLICKED_RESIZE_LEFT || clickedResizeType == MOUSE_CLICKED_RESIZE_RIGHT) {
+          ct.loadCursor("cursors/aerodrop/14fef782d02440884392942c11205230");
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_LEFT || clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_RIGHT) {
+          ct.loadCursor("cursors/aerodrop/c7088f0f3e6c8088236ef8e1e3e70000");
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP || clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM) {
+          ct.loadCursor("cursors/aerodrop/2870a09082c103050810ffdffffe0204");
+        } else if (clickedResizeType == MOUSE_CLICKED_RESIZE_TOP_RIGHT || clickedResizeType == MOUSE_CLICKED_RESIZE_BOTTOM_LEFT) {
+          ct.loadCursor("cursors/aerodrop/fcf1c3c7cd4491d801f1e1c78f100000");
+        }
+      } else if (mouseIsInDraggableBorder()) {
+        // should we have a custom cursor here as well as on click?
+        ct.loadCursor("cursors/aerodrop/4498f0e0c1937ffe01fd06f973665830");
+      } else {
+        ct.loadCursor("cursors/aerodrop/4498f0e0c1937ffe01fd06f973665830");
+      }
+    } else {
+      // TODO: set to 4498f0e0c1937ffe01fd06f973665830 if mouse is not over a window
+    }
   }
 }

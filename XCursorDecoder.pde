@@ -1,60 +1,4 @@
-class XCursorDecoder {
-  
-  class ByteTools {
-    int position = 0;
-
-    int[] readInt(byte[] bytes, int size, int offset) {
-      position += offset;
-      
-      int start = position;
-      int end = position+(size*4);
-      
-      int[] x = new int[size];
-      
-      for (int i = start; i < end; i+=4) {
-        x[i-start] = (
-                       (bytes[i+0] & 0xFF) << 0
-                     ) | (
-                       (bytes[i+1] & 0xFF) << 8
-                     ) | (
-                       (bytes[i+2] & 0xFF) << 16
-                     ) | (
-                       (bytes[i+3] & 0xFF) << 24
-                     );
-        position+=4;
-      }
-      
-      return x;
-    }
-    
-    int[] readIntBigEndian(byte[] bytes, int size, int offset) {
-      position += offset;
-      
-      int start = position;
-      int end = position+(size*4);
-      
-      int[] x = new int[size];
-      
-      for (int i = start; i < end; i+=4) {
-        x[i-start] = (
-                       (bytes[i+3] & 0xFF) << 0
-                     ) | (
-                       (bytes[i+2] & 0xFF) << 8
-                     ) | (
-                       (bytes[i+1] & 0xFF) << 16
-                     ) | (
-                       (bytes[i+0] & 0xFF) << 24
-                     );
-        position+=4;
-      }
-      
-      return x;
-    }
-    
-    void seek(int position) {
-      this.position = position;
-    }
-  }
+class XCursorDecoder {  
   
   String toHexString(byte b) {
     return "0x" + Integer.toHexString(b);
@@ -162,7 +106,7 @@ class XCursorDecoder {
     }
   }
   
-  ByteReader x = new ByteReader();
+  ByteReader x = null;
   
   class TOC_chunk {
     boolean isComment = false;
@@ -176,11 +120,11 @@ class XCursorDecoder {
     byte[] length;
     byte[][] string;
     
-    byte[] width;
-    byte[] height;
-    byte[] xhot;
-    byte[] yhot;
-    byte[] delay;
+    int width;
+    int height;
+    int xhot;
+    int yhot;
+    int delay;
     byte[][] pixels;
     
     void readCommonHeader(byte[] f) {
@@ -198,7 +142,7 @@ class XCursorDecoder {
 
       //   string: LISTofCARD8 UTF-8 string 
       
-      int l = new ByteTools().readInt(length, 1, 0)[0];
+      int l = ByteTools.readIntRetainPosition(length, 1, 0)[0];
 
       string = new byte[l][];
       for (int i = 0; i < l; i++) string[i] = x.read(f, 1, 0);
@@ -209,20 +153,15 @@ class XCursorDecoder {
       isComment = false;
       isImage = true;
       readCommonHeader(f);
-      width = x.read(f, 4, 0);
-      height = x.read(f, 4, 0);
-      xhot = x.read(f, 4, 0);
-      yhot = x.read(f, 4, 0);
-      delay = x.read(f, 4, 0);
+      width = ByteTools.readIntRetainPosition(x.read(f, 4, 0), 1, 0)[0];
+      height = ByteTools.readIntRetainPosition(x.read(f, 4, 0), 1, 0)[0];
+      xhot = ByteTools.readIntRetainPosition(x.read(f, 4, 0), 1, 0)[0];
+      yhot = ByteTools.readIntRetainPosition(x.read(f, 4, 0), 1, 0)[0];
+      delay = ByteTools.readIntRetainPosition(x.read(f, 4, 0), 1, 0)[0];
       
       //   pixels: LISTofCARD32 Packed ARGB format pixels
-      
-      ByteTools bt = new ByteTools();
 
-      int w = bt.readInt(width, 1, 0)[0];
-      bt.seek(0);
-      int h = bt.readInt(height, 1, 0)[0];
-      int l =  h*w;
+      int l =  height*width;
 
       pixels = new byte[l][];      
       for (int i = 0; i < l; i++) pixels[i] = x.read(f, 4, 0);
@@ -236,21 +175,21 @@ class XCursorDecoder {
       s = s + "\n        subtype =               " + toHexString(subtype, 4);
       s = s + "\n        version =               " + toHexString(version, 4);
       if (isImage) {
-        s = s + "\n        width =                 " + toHexString(width, 4);
-        s = s + "\n        height =                " + toHexString(height, 4);
-        s = s + "\n        xhot =                  " + toHexString(xhot, 4);
-        s = s + "\n        yhot =                  " + toHexString(yhot, 4);
-        s = s + "\n        delay =                 " + toHexString(delay, 4);
+        s = s + "\n        width =                 " + width;
+        s = s + "\n        height =                " + height;
+        s = s + "\n        xhot =                  " + xhot;
+        s = s + "\n        yhot =                  " + yhot;
+        s = s + "\n        delay =                 " + delay;
         if (printPixels) {
           ByteDump bt = new ByteDump();
           bt.groupSize = 8;
-          s = s + "\n        pixels =                " + bt.dump(pixels, new ByteTools().readInt(width, 1, 0)[0]*new ByteTools().readInt(height, 1, 0)[0], 4);
+          s = s + "\n        pixels =                " + bt.dump(pixels, width * height, 4);
         }
       } else if (isComment) {
         s = s + "\n        length =                " + toHexString(length, 4);
         ByteDump bt = new ByteDump();
         bt.groupSize = 1;
-        s = s + "\n        string =                " + bt.dump(string, new ByteTools().readInt(length, 1, 0)[0], 1);
+        s = s + "\n        string =                " + bt.dump(string, ByteTools.readIntRetainPosition(length, 1, 0)[0], 1);
       }
       return s;
     }
@@ -267,8 +206,7 @@ class XCursorDecoder {
       subtype = x.read(f, 4, 0);
       position = x.read(f, 4, 0);
       chunk = new TOC_chunk();
-      ByteTools bt = new ByteTools();
-      int pos = bt.readInt(position, 1, 0)[0];
+      int pos = ByteTools.readIntRetainPosition(position, 1, 0)[0];
       if (type[1] == 0x0 && type[3] == 0xffffffff) {
         if (type[0] == 0x1 && type[2] == 0xfffffffe) {
           x.seek(pos);
@@ -330,22 +268,32 @@ class XCursorDecoder {
     
   }
   
-  PImage getImage(Header header, int index) {
+  class CursorData {
+    PImage image = null;
+    int width = 0;
+    int height = 0;
+    int xhot = 0;
+    int yhot = 0;
+  }
+  
+  CursorData getImage(Header header, int index) {
     int index_ = 0;
     for (TOC toc : header.toc) {
       TOC_chunk chunk = toc.chunk;
       if (chunk.isImage) {
         if (index == index_) {
-          println("image found");
-          int width = new ByteTools().readInt(chunk.width, 1, 0)[0];
-          int height = new ByteTools().readInt(chunk.height, 1, 0)[0];
-          PImage img = createImage(width, height, ARGB);
-          img.loadPixels();
-          for (int i = 0; i < img.pixels.length; i++) {
-            img.pixels[i] = new ByteTools().readInt(chunk.pixels[i], 1, 0)[0];
+          CursorData cd = new CursorData();
+          cd.width = chunk.width;
+          cd.xhot = chunk.xhot;
+          cd.height = chunk.height;
+          cd.yhot = chunk.yhot;
+          cd.image = createImage(cd.width, cd.height, ARGB);
+          cd.image.loadPixels();
+          for (int i = 0; i < cd.image.pixels.length; i++) {
+            cd.image.pixels[i] = ByteTools.readIntRetainPosition(chunk.pixels[i], 1, 0)[0];
           }
-          img.updatePixels();
-          return img;
+          cd.image.updatePixels();
+          return cd;
         } else {
           index_++;
         }
@@ -359,6 +307,9 @@ class XCursorDecoder {
   Header header = null;
   
   boolean load(String file) {
+    f = null;
+    byteFile = null;
+    header = null;
     f = dataFile(file);
     if (!f.exists()) {
       f = null;
@@ -368,7 +319,7 @@ class XCursorDecoder {
     byteFile = loadBytes(f);
     header = new Header();
     if (header.isValid(byteFile)) {
-      println(file + " is a valid XCursor");
+      x = new ByteReader();
       header.read(byteFile);
       return true;
     } else {
@@ -384,7 +335,11 @@ class XCursorDecoder {
     return header != null ? header.toString(printPixels) : "";
   }
 
-  PImage decode() {
+  CursorData decode() {
     return header != null ? getImage(header, 0) : null;
+  }
+  
+  CursorData loadAndDecode(String file) {
+    return load(file) ? decode() : null;
   }
 }

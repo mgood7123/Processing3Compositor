@@ -23,6 +23,7 @@ class Compositor {
   public PGraphics graphics;
   ArrayList<WindowObject> windows = new ArrayList<WindowObject>();
   WindowObject w;
+  CursorTools cursorTools = new CursorTools();
   int windowFocus = -1;
   int lastWindowFocus = -1;
   boolean displayFPS = false;
@@ -105,11 +106,7 @@ class Compositor {
   }
 
   void setup() {
-    XCursorDecoder XCD = new XCursorDecoder();
-    if (XCD.load("cursors/aerodrop/right_ptr")) {
-      PImage image = XCD.decode();
-      if (image != null) cursor(image, 0, 0);
-    }
+    cursorTools.loadCursor("cursors/aerodrop/right_ptr");
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.setup();
@@ -153,7 +150,7 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseDragged();
-      drawGraphics(window);
+      //drawGraphics(window);
     }
     graphics.endDraw();
     drawGraphics();
@@ -163,6 +160,16 @@ class Compositor {
     graphics.beginDraw();
     for (WindowObject window: windows) {
       window.mouseReleased();
+      drawGraphics(window);
+    }
+    graphics.endDraw();
+    drawGraphics();
+  }
+  
+  void mouseMoved() {
+    graphics.beginDraw();
+    for (WindowObject window: windows) {
+      window.mouseMoved();
       drawGraphics(window);
     }
     graphics.endDraw();

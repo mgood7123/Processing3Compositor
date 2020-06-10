@@ -1,18 +1,16 @@
 class Applications_XCursor_Decoder_Example extends Window {
-  PImage image = null;
+  XCursorDecoder.CursorData cursorData = null;
 
   @Override
   void setup() {
-    XCursorDecoder XCD = new XCursorDecoder();
-    XCD.load("cursors/aerodrop/right_ptr");
-    image = XCD.decode();
+    cursorData = new XCursorDecoder().loadAndDecode("cursors/aerodrop/right_ptr");
   }
   
   @Override
   void draw() {
     graphics.beginDraw();
     graphics.background(0);
-    graphics.image(image, width/2, height/2);
+    graphics.image(cursorData.image, (width/2)+cursorData.xhot, (height/2)+cursorData.yhot);
     graphics.endDraw();
   }
 }

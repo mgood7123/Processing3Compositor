@@ -22,4 +22,5 @@ class Window {
   void mousePressed() {}
   void mouseDragged() {}
   void mouseReleased() {}
+  void mouseMoved() {}
 }

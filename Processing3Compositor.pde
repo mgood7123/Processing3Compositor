@@ -1,14 +1,11 @@
 Compositor compositor;
 
 void settings() {
-    size(400, 400, P3D);
+  //fullScreen(P3D);
+  size(400, 400, P3D);
 }
 
-void setup() {
-  compositor = new Compositor(width, height);
-  compositor.displayFPS = true;
-  compositor.displayWindowFPS = true;
-  compositor.debug = true;
+void addApplications() {
   compositor.add(new Applications_DraggableExample(), 200, 200);
   compositor.setLocation(0 ,0);
   compositor.add(new Applications_Cube(), 200, 200);
@@ -17,11 +14,19 @@ void setup() {
   compositor.setLocation(200, 0);
   compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(200, 200);
+}
+
+void setup() {
+  compositor = new Compositor(width, height);
+  compositor.displayFPS = true;
+  compositor.displayWindowFPS = true;
+  compositor.debug = false;
+  addApplications();
   compositor.setup();
 }
 
 void draw() {
-  compositor.draw(); //<>//
+  compositor.draw(); //<>// //<>// //<>//
 }
 
 void mousePressed() {
@@ -34,4 +39,8 @@ void mouseDragged() {
 
 void mouseReleased() {
   compositor.mouseReleased();
+}
+
+void mouseMoved() {
+  compositor.mouseMoved();
 }
