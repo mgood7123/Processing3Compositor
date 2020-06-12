@@ -2,7 +2,6 @@ class Applications_Cube extends Window {
   
   @Override
   void draw() {
-    graphics.beginDraw();
     graphics.lights();
     graphics.background(0);
     graphics.noStroke();
@@ -10,6 +9,5 @@ class Applications_Cube extends Window {
     graphics.rotateX(frameCount/100.0);
     graphics.rotateY(frameCount/200.0);
     graphics.box(40);
-    graphics.endDraw();
   }
 }

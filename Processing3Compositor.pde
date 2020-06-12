@@ -7,13 +7,40 @@ void settings() {
 
 void addApplications() {
   compositor.add(new Applications_DraggableExample(), 200, 200);
-  compositor.setLocation(0 ,0);
+  compositor.setLocation(0, 0);
   compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(0, 200);
   compositor.add(new Applications_XCursor_Decoder_Example(), 200, 200);
   compositor.setLocation(200, 0);
   compositor.add(new Applications_Cube(), 200, 200);
   compositor.setLocation(200, 200);
+    
+  //compositor.add(new Applications_DraggableExample(), 200, 200);
+  //compositor.setLocation(0+400, 0);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(0+400, 200);
+  //compositor.add(new Applications_XCursor_Decoder_Example(), 200, 200);
+  //compositor.setLocation(200+400, 0);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(200+400, 200);
+  
+  //compositor.add(new Applications_DraggableExample(), 200, 200);
+  //compositor.setLocation(0, 0+400);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(0, 200+400);
+  //compositor.add(new Applications_XCursor_Decoder_Example(), 200, 200);
+  //compositor.setLocation(200, 0+400);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(200, 200+400);
+
+  //compositor.add(new Applications_DraggableExample(), 200, 200);
+  //compositor.setLocation(0+400, 0+400);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(0+400, 200+400);
+  //compositor.add(new Applications_XCursor_Decoder_Example(), 200, 200);
+  //compositor.setLocation(200+400, 0+400);
+  //compositor.add(new Applications_Cube(), 200, 200);
+  //compositor.setLocation(200+400, 200+400);
 }
 
 void setup() {
@@ -21,6 +48,7 @@ void setup() {
   compositor.displayFPS = true;
   compositor.displayWindowFPS = true;
   compositor.debug = false;
+  compositor.handleInputEvents = false;
   addApplications();
   compositor.setup();
 }

@@ -8,9 +8,7 @@ class Applications_XCursor_Decoder_Example extends Window {
   
   @Override
   void draw() {
-    graphics.beginDraw();
     graphics.background(0);
     graphics.image(cursorData.image, (width/2)+cursorData.xhot, (height/2)+cursorData.yhot);
-    graphics.endDraw();
   }
 }

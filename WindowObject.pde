@@ -167,17 +167,11 @@ class WindowObject {
   
   private class RectangleCorners {
     int topLeftX, topLeftY;
-    int topRightX, topRightY;
-    int bottomLeftX, bottomLeftY;
     int bottomRightX, bottomRightY;
     
     RectangleCorners(int startX, int startY, int endX, int endY) {
       topLeftX = startX;
       topLeftY = startY;
-      topRightX = endX;
-      topRightY = startY;
-      bottomLeftX = startX;
-      bottomLeftY = endY;
       bottomRightX = endX;
       bottomRightY = endY;
     }
@@ -189,12 +183,10 @@ class WindowObject {
     boolean debug = false;
     
     void drawHitbox(int red, int green, int blue) {
-      graphics.beginDraw();
       graphics.rectMode(CORNER);
       graphics.stroke(0);
       graphics.fill(red, green, blue);
       graphics.rect(hitbox.topLeftX, hitbox.topLeftY, hitbox.bottomRightX, hitbox.bottomRightY);
-      graphics.endDraw();
     }
     
     void drawHitboxUnhit() {
@@ -293,7 +285,15 @@ class WindowObject {
     if (!resizable) return;
         
     if (mouseIsInWindow() && !mouseIsInApp()) {
-      if (hitboxTopLeft.mouseIsInHitbox(x, y)) {
+      if (
+          hitboxTopLeft == null ||
+          hitboxTopRight == null ||
+          hitboxBottomLeft == null ||
+          hitboxBottomRight == null
+      ) {
+        return;
+      }
+      else if (hitboxTopLeft.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_TOP_LEFT;
       } else if (hitboxBottomLeft.mouseIsInHitbox(x, y)) {
         clickedResizeType = MOUSE_CLICKED_RESIZE_BOTTOM_LEFT;
@@ -320,9 +320,7 @@ class WindowObject {
   }
 
   void clearScreen() {
-    graphics.beginDraw();
     graphics.background(0);
-    graphics.endDraw();
   }
   
   boolean resizingLeft = false;
@@ -335,39 +333,31 @@ class WindowObject {
   boolean resizingBottomRight = false;
   
   void drawResizeZoneLeft(int red, int green, int blue) {
-    graphics.beginDraw();
     graphics.rectMode(CORNER);
     graphics.stroke(0);
     graphics.fill(red, green, blue);
     graphics.rect(0, 0, resizeLeft, height);
-    graphics.endDraw();
   }
 
   void drawResizeZoneTop(int red, int green, int blue) {
-    graphics.beginDraw();
     graphics.rectMode(CORNER);
     graphics.stroke(0);
     graphics.fill(red, green, blue);
     graphics.rect(0, 0, width, resizeTop);
-    graphics.endDraw();
   }
 
   void drawResizeZoneRight(int red, int green, int blue) {
-    graphics.beginDraw();
     graphics.rectMode(CORNER);
     graphics.stroke(0);
     graphics.fill(red, green, blue);
     graphics.rect(width-resizeRight, 0, resizeRight, height);
-    graphics.endDraw();
   }
 
   void drawResizeZoneBottom(int red, int green, int blue) {
-    graphics.beginDraw();
     graphics.rectMode(CORNER);
     graphics.stroke(0);
     graphics.fill(red, green, blue);
     graphics.rect(0, height-resizeBottom, width, resizeBottom);
-    graphics.endDraw();
   }
   
   void drawResizeZoneLeftHit() {
@@ -419,12 +409,10 @@ class WindowObject {
   }
 
   void drawBordersWithFill(int fill__) {
-    graphics.beginDraw();
     graphics.rectMode(CORNER);
     graphics.stroke(0);
     graphics.fill(fill__);
     graphics.rect(0, 0, width, height, 10);
-    graphics.endDraw();
     // w, h, w, h
     hitboxTopLeft = new Hitbox(0, 0, resizeLeft, resizeTop, debug);
     hitboxBottomLeft = new Hitbox(0, height-resizeBottom, resizeLeft, height, debug);
@@ -618,6 +606,7 @@ class WindowObject {
   }
   
   void drawGraphics() {
+    graphics.endDraw();
     if (displayFPS) {
       window.graphics.beginDraw();
       int oldColor = window.graphics.fillColor;
@@ -628,17 +617,11 @@ class WindowObject {
       window.graphics.endDraw();
     }
     graphics.beginDraw();
-    graphics.image(
-      window.graphics,
-      window.x,
-      window.y,
-      window.width,
-      window.height
-    );
-    graphics.endDraw();
+    graphics.image(window.graphics, window.x, window.y, window.width, window.height);
   }
   
   void drawWindow() {
+    graphics.beginDraw();
     clearScreen();
     if (focus) {
       if (clickedOnBorder && locked) drawBordersLocked();
@@ -647,6 +630,7 @@ class WindowObject {
       drawBorders();
     }
     drawGraphics();
+    graphics.endDraw();
   }
   
   void resizeWindow() {
@@ -659,13 +643,17 @@ class WindowObject {
   void setup() {
     correctMouseLocation();
     resizeWindow();
+    window.graphics.beginDraw();
     window.setup();
+    window.graphics.endDraw();
     drawWindow();
   }
   
   void draw() {
     correctMouseLocation();
+    window.graphics.beginDraw();
     window.draw();
+    window.graphics.endDraw();
     drawWindow();
   }
   

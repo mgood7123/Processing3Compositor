@@ -10,14 +10,10 @@ class Window {
   String onRequestType() { return P3D; }
   void onAfterResize() {}
   void setup() {
-    graphics.beginDraw();
     graphics.background(0);
-    graphics.endDraw();
   }
   void draw() {
-    graphics.beginDraw();
     graphics.background(0);
-    graphics.endDraw();
   }
   void mousePressed() {}
   void mouseDragged() {}

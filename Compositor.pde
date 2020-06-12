@@ -4,7 +4,8 @@
 // untill more information is available on the difference between a
 // compositor and a window manager
 
-// from https://github.com/mgood7123/AndroidCompositor/blob/5232f327e22df10368c780287822bc2320b22f06/app/src/main/jni/compositor.cpp#L17
+// start from https://github.com/mgood7123/AndroidCompositor/blob/5232f327e22df10368c780287822bc2320b22f06/app/src/main/jni/compositor.cpp#L17
+//
 // my current understanding of all this is that a compositor will render each
 // application's frame buffer, and a window manager such as KDE or GNOME or I3,
 // will work WITH the compositor retrieving information about windows and their
@@ -19,6 +20,14 @@
 
 // TODO: optimize focus algorithm
 
+// TODO: implement double/tripple buffering for faster performance
+//       https://en.wikipedia.org/wiki/Multiple_buffering
+
+// TODO: implement an restrainable PGraphics object
+//       in which fill(0) will only fill from x1, y2, to x2, y2
+//       instead of from 0, 0, width, height
+
+
 class Compositor {
   public PGraphics graphics;
   ArrayList<WindowObject> windows = new ArrayList<WindowObject>();
@@ -29,6 +38,7 @@ class Compositor {
   boolean displayFPS = false;
   boolean displayWindowFPS = false;
   boolean debug = false;
+  boolean handleInputEvents = true;
   
   Compositor(int width, int height) {
     graphics = createGraphics(width, height, P3D);
@@ -73,7 +83,7 @@ class Compositor {
       
       // assume last index is top most //<>// //<>// //<>// //<>//
       topMostIndex = focusableWindows.size()-1;
-
+ //<>//
       WindowObject target = focusableWindows.get(topMostIndex);
 
       windows.remove(windows.indexOf(target));
@@ -128,51 +138,59 @@ class Compositor {
   }
   
   void mousePressed() {
-    for (WindowObject window: windows) window.canFocus();
-    if (lastWindowFocus != -1) {
-      WindowObject win = windows.get(lastWindowFocus);
-      win.focus = false;
+    if (handleInputEvents) {
+      for (WindowObject window: windows) window.canFocus();
+      if (lastWindowFocus != -1) {
+        WindowObject win = windows.get(lastWindowFocus);
+        win.focus = false;
+      }
+      reorder_array();
+      if (windowFocus != -1) {
+        lastWindowFocus = windowFocus;
+        WindowObject win = windows.get(windowFocus);
+        win.focus = true;
+        win.mousePressed();
+        graphics.beginDraw();
+        drawGraphics(win);
+        graphics.endDraw();
+        drawGraphics();
+      }
     }
-    reorder_array();
-    if (windowFocus != -1) {
-      lastWindowFocus = windowFocus;
-      WindowObject win = windows.get(windowFocus);
-      win.focus = true;
-      win.mousePressed();
+  }
+  
+  void mouseDragged() {
+    if (handleInputEvents) {
       graphics.beginDraw();
-      drawGraphics(win);
+      for (WindowObject window: windows) {
+        window.mouseDragged();
+        //drawGraphics(window);
+      }
       graphics.endDraw();
       drawGraphics();
     }
   }
   
-  void mouseDragged() {
-    graphics.beginDraw();
-    for (WindowObject window: windows) {
-      window.mouseDragged();
-      //drawGraphics(window);
-    }
-    graphics.endDraw();
-    drawGraphics();
-  }
-  
   void mouseReleased() {
-    graphics.beginDraw();
-    for (WindowObject window: windows) {
-      window.mouseReleased();
-      drawGraphics(window);
+    if (handleInputEvents) {
+      graphics.beginDraw();
+      for (WindowObject window: windows) {
+        window.mouseReleased();
+        drawGraphics(window);
+      }
+      graphics.endDraw();
+      drawGraphics();
     }
-    graphics.endDraw();
-    drawGraphics();
   }
   
   void mouseMoved() {
-    graphics.beginDraw();
-    for (WindowObject window: windows) {
-      window.mouseMoved();
-      drawGraphics(window);
+    if (handleInputEvents) {
+      graphics.beginDraw();
+      for (WindowObject window: windows) {
+        window.mouseMoved();
+        drawGraphics(window);
+      }
+      graphics.endDraw();
+      drawGraphics();
     }
-    graphics.endDraw();
-    drawGraphics();
   }
 }

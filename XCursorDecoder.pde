@@ -246,7 +246,7 @@ class XCursorDecoder {
       toc = new TOC[1];
       for (int i = 0; i < ntoc[0]; i++) {
         toc[i] = new TOC();
-        toc[i].read(f); //<>//
+        toc[i].read(f); //<>// //<>//
       }
     }
     
